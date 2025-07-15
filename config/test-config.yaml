@@ -1,2 +1,66 @@
-# Test configuration file
+env: "test"
 
+api:
+  base_url: "http://localhost:8080/api"
+  timeout: "10s"
+  client_id: "e2e-test-client"
+  client_secret: "e2e-test-secret"
+
+database:
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "postgres"
+  db_name: "pinstack_test"
+  ssl_mode: "disable"
+
+kafka:
+  brokers: "localhost:9092"
+  group_id: "e2e-test-group"
+  poll_interval: "100ms"
+  topics:
+    user_events: "user-events"
+    post_events: "post-events"
+    error_events: "error-events"
+  acks: "all"
+  retries: 3
+  retry_backoff_ms: 500
+  delivery_timeout_ms: 5000
+  queue_buffering_max_messages: 100000
+  queue_buffering_max_ms: 5
+  compression_type: "snappy"
+  batch_size: 16384
+  linger_ms: 5
+
+test:
+  concurrent: 5
+  requests_per_test: 100
+  test_timeout: "2m"
+  cleanup: true
+  log_level: "info"
+
+services:
+  user_service:
+    address: "localhost"
+    port: 50051
+  auth_service:
+    address: "localhost"
+    port: 50052
+  post_service:
+    address: "localhost"
+    port: 50053
+  relation_service:
+    address: "localhost"
+    port: 50054
+  notification_service:
+    address: "localhost"
+    port: 50055
+
+jwt:
+  secret: "my-secret"
+  access_expires_at: "1m"
+  refresh_expires_at: "5m"
+
+prometheus:
+  address: "0.0.0.0"
+  port: 9106
