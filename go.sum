@@ -1,0 +1,7 @@
+github.com/confluentinc/confluent-kafka-go/v2 v2.3.0/go.mod h1:/VTy8iEpe6mD9pkCH5BhijlUl8ulUXymKv1Qig5Rgb8=
+github.com/jackc/pgx/v5 v5.5.1/go.mod h1:Ig06C2Vu0t5qXC60W8sqIthScaEnFvojjj9dSljmHRA=
+github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+github.com/testcontainers/testcontainers-go v0.26.0/go.mod h1:ICriE9bLX5CLxL9OFQ2N+2N+f+803LNJ1utJb1+Inx0=
+github.com/testcontainers/testcontainers-go/modules/kafka v0.26.0/go.mod h1:eXdpu/I3XRIB7CNDjS/ZL3oudCyYNwGQ+bMhStrYCuQ=
+github.com/testcontainers/testcontainers-go/modules/postgres v0.26.0/go.mod h1:2p5a6shxPWQkSjErw6z5Sq/6DF1lMq7OnBX5R6EQrII=
+golang.org/x/sync v0.5.0/go.mod h1:Czt+wKu1gCyEFDUtn0jG5QVvpJ6rzVqr5aXyt9drQfk=
