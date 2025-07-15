@@ -8,84 +8,84 @@ import (
 )
 
 type Config struct {
-	Env        string
-	API        API
-	Database   Database
-	Kafka      Kafka
-	Test       Test
-	Services   Services
-	JWT        JWT
-	Prometheus Prometheus
+	Env        string     `mapstructure:"env"`
+	API        API        `mapstructure:"api"`
+	Database   Database   `mapstructure:"database"`
+	Kafka      Kafka      `mapstructure:"kafka"`
+	Test       Test       `mapstructure:"test"`
+	Services   Services   `mapstructure:"services"`
+	JWT        JWT        `mapstructure:"jwt"`
+	Prometheus Prometheus `mapstructure:"prometheus"`
 }
 
 type API struct {
-	BaseURL      string
-	Timeout      time.Duration
-	ClientID     string
-	ClientSecret string
+	BaseURL      string        `mapstructure:"base_url"`
+	Timeout      time.Duration `mapstructure:"timeout"`
+	ClientID     string        `mapstructure:"client_id"`
+	ClientSecret string        `mapstructure:"client_secret"`
 }
 
 type Database struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	DBName   string
-	SSLMode  string
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
+	DBName   string `mapstructure:"db_name"`
+	SSLMode  string `mapstructure:"ssl_mode"`
 }
 
 type Kafka struct {
-	Brokers                   string
-	GroupID                   string
-	PollInterval              time.Duration
-	Topics                    KafkaTopics
-	Acks                      string
-	Retries                   int
-	RetryBackoffMs            int
-	DeliveryTimeoutMs         int
-	QueueBufferingMaxMessages int
-	QueueBufferingMaxMs       int
-	CompressionType           string
-	BatchSize                 int
-	LingerMs                  int
+	Brokers                   string        `mapstructure:"brokers"`
+	GroupID                   string        `mapstructure:"group_id"`
+	PollInterval              time.Duration `mapstructure:"poll_interval"`
+	Topics                    KafkaTopics   `mapstructure:"topics"`
+	Acks                      string        `mapstructure:"acks"`
+	Retries                   int           `mapstructure:"retries"`
+	RetryBackoffMs            int           `mapstructure:"retry_backoff_ms"`
+	DeliveryTimeoutMs         int           `mapstructure:"delivery_timeout_ms"`
+	QueueBufferingMaxMessages int           `mapstructure:"queue_buffering_max_messages"`
+	QueueBufferingMaxMs       int           `mapstructure:"queue_buffering_max_ms"`
+	CompressionType           string        `mapstructure:"compression_type"`
+	BatchSize                 int           `mapstructure:"batch_size"`
+	LingerMs                  int           `mapstructure:"linger_ms"`
 }
 
 type KafkaTopics struct {
-	UserEvents  string
-	PostEvents  string
-	ErrorEvents string
+	UserEvents  string `mapstructure:"user_events"`
+	PostEvents  string `mapstructure:"post_events"`
+	ErrorEvents string `mapstructure:"error_events"`
 }
 
 type Test struct {
-	Concurrent      int
-	RequestsPerTest int
-	TestTimeout     time.Duration
-	Cleanup         bool
-	LogLevel        string
+	Concurrent      int           `mapstructure:"concurrent"`
+	RequestsPerTest int           `mapstructure:"requests_per_test"`
+	TestTimeout     time.Duration `mapstructure:"test_timeout"`
+	Cleanup         bool          `mapstructure:"cleanup"`
+	LogLevel        string        `mapstructure:"log_level"`
 }
 
 type Services struct {
-	UserService         ServiceConfig
-	AuthService         ServiceConfig
-	PostService         ServiceConfig
-	RelationService     ServiceConfig
-	NotificationService ServiceConfig
+	UserService         ServiceConfig `mapstructure:"user_service"`
+	AuthService         ServiceConfig `mapstructure:"auth_service"`
+	PostService         ServiceConfig `mapstructure:"post_service"`
+	RelationService     ServiceConfig `mapstructure:"relation_service"`
+	NotificationService ServiceConfig `mapstructure:"notification_service"`
 }
 
 type ServiceConfig struct {
-	Address string
-	Port    int
+	Address string `mapstructure:"address"`
+	Port    int    `mapstructure:"port"`
 }
 
 type JWT struct {
-	Secret           string
-	AccessExpiresAt  time.Duration
-	RefreshExpiresAt time.Duration
+	Secret           string        `mapstructure:"secret"`
+	AccessExpiresAt  time.Duration `mapstructure:"access_expires_at"`
+	RefreshExpiresAt time.Duration `mapstructure:"refresh_expires_at"`
 }
 
 type Prometheus struct {
-	Address string
-	Port    int
+	Address string `mapstructure:"address"`
+	Port    int    `mapstructure:"port"`
 }
 
 func MustLoad() *Config {
@@ -148,37 +148,37 @@ func MustLoad() *Config {
 	viper.SetDefault("prometheus.port", 9106)
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Printf("Ошибка чтения файла конфигурации: %s", err)
+		log.Printf("Error reading config file: %s", err)
 		os.Exit(1)
 	}
 
 	apiTimeout, err := time.ParseDuration(viper.GetString("api.timeout"))
 	if err != nil {
-		log.Printf("Ошибка при парсинге api.timeout: %s", err)
+		log.Printf("Error reading api.timeout: %s", err)
 		apiTimeout = 10 * time.Second
 	}
 
 	pollInterval, err := time.ParseDuration(viper.GetString("kafka.poll_interval"))
 	if err != nil {
-		log.Printf("Ошибка при парсинге kafka.poll_interval: %s", err)
+		log.Printf("Error reading kafka.poll_interval: %s", err)
 		pollInterval = 100 * time.Millisecond
 	}
 
 	testTimeout, err := time.ParseDuration(viper.GetString("test.test_timeout"))
 	if err != nil {
-		log.Printf("Ошибка при парсинге test.test_timeout: %s", err)
+		log.Printf("Error reading  test.test_timeout: %s", err)
 		testTimeout = 2 * time.Minute
 	}
 
 	accessExpiresAt, err := time.ParseDuration(viper.GetString("jwt.access_expires_at"))
 	if err != nil {
-		log.Printf("Ошибка при парсинге jwt.access_expires_at: %s", err)
+		log.Printf("Error reading jwt.access_expires_at: %s", err)
 		accessExpiresAt = 1 * time.Minute
 	}
 
 	refreshExpiresAt, err := time.ParseDuration(viper.GetString("jwt.refresh_expires_at"))
 	if err != nil {
-		log.Printf("Ошибка при парсинге jwt.refresh_expires_at: %s", err)
+		log.Printf("Error reading  jwt.refresh_expires_at: %s", err)
 		refreshExpiresAt = 5 * time.Minute
 	}
 
