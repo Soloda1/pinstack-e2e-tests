@@ -4,15 +4,20 @@ import "errors"
 
 // Ошибки пользователя
 var (
-	ErrUserNotFound      = errors.New("user not found")
-	ErrUsernameExists    = errors.New("username already exists")
-	ErrEmailExists       = errors.New("email already exists")
-	ErrInvalidUsername   = errors.New("invalid username")
-	ErrInvalidEmail      = errors.New("invalid email")
-	ErrInvalidPassword   = errors.New("invalid password")
-	ErrPasswordMismatch  = errors.New("passwords do not match")
-	ErrUserAlreadyExists = errors.New("user already exists")
-	ErrUserCreateFailed  = errors.New("failed to create user")
+	ErrUserNotFound       = errors.New("user not found")
+	ErrUsernameExists     = errors.New("username already exists")
+	ErrEmailExists        = errors.New("email already exists")
+	ErrInvalidUsername    = errors.New("invalid username")
+	ErrInvalidEmail       = errors.New("invalid email")
+	ErrInvalidPassword    = errors.New("invalid password")
+	ErrPasswordMismatch   = errors.New("passwords do not match")
+	ErrUserAlreadyExists  = errors.New("user already exists")
+	ErrUserCreateFailed   = errors.New("failed to create user")
+	ErrUserGetFailed      = errors.New("failed to get user")
+	ErrUserUpdateFailed   = errors.New("failed to update user")
+	ErrUserDeleteFailed   = errors.New("failed to delete user")
+	ErrAvatarUpdateFailed = errors.New("failed to update avatar")
+	ErrUserSearchFailed   = errors.New("failed to search users")
 )
 
 // Ошибки аутентификации
