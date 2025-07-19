@@ -111,6 +111,11 @@ var (
 	ErrMediaNotFound     = errors.New("media not found")
 	ErrMediaAttachFailed = errors.New("failed to attach media to post")
 	ErrMediaDetachFailed = errors.New("failed to detach media from post")
+	ErrPostCreateFailed  = errors.New("failed to create post")
+	ErrPostGetFailed     = errors.New("failed to get post by ID")
+	ErrPostUpdateFailed  = errors.New("failed to update post")
+	ErrPostDeleteFailed  = errors.New("failed to delete post")
+	ErrPostListFailed    = errors.New("failed to list posts")
 )
 
 // Follower relation errors
