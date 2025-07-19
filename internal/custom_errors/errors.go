@@ -2,7 +2,7 @@ package custom_errors
 
 import "errors"
 
-// Ошибки пользователя
+// User errors
 var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrUsernameExists     = errors.New("username already exists")
@@ -20,7 +20,7 @@ var (
 	ErrUserSearchFailed   = errors.New("failed to search users")
 )
 
-// Ошибки аутентификации
+// Auth errors
 var (
 	ErrInvalidCredentials    = errors.New("invalid credentials")
 	ErrInvalidRefreshToken   = errors.New("invalid refresh token")
@@ -35,7 +35,7 @@ var (
 	ErrPasswordUpdateFailed  = errors.New("failed to update password")
 )
 
-// Ошибки валидации
+// Validation errors
 var (
 	ErrValidationFailed = errors.New("validation failed")
 	ErrInvalidInput     = errors.New("invalid input")
@@ -43,68 +43,68 @@ var (
 	ErrForbidden        = errors.New("forbidden")
 )
 
-// Ошибки базы данных
+// Database errors
 var (
 	ErrDatabaseConnection  = errors.New("database connection error")
 	ErrDatabaseQuery       = errors.New("database query error")
 	ErrDatabaseTransaction = errors.New("database transaction error")
 )
 
-// Ошибки внешних сервисов
+// External service errors
 var (
 	ErrExternalServiceUnavailable = errors.New("external service unavailable")
 	ErrExternalServiceTimeout     = errors.New("external service timeout")
 	ErrExternalServiceError       = errors.New("external service error")
 )
 
-// Ошибки файловой системы
+// File system errors
 var (
 	ErrFileNotFound     = errors.New("file not found")
 	ErrFileAccessDenied = errors.New("file access denied")
 	ErrFileTooLarge     = errors.New("file too large")
 )
 
-// Ошибки конфигурации
+// Config errors
 var (
 	ErrConfigNotFound   = errors.New("configuration not found")
 	ErrConfigInvalid    = errors.New("invalid configuration")
 	ErrConfigLoadFailed = errors.New("failed to load configuration")
 )
 
-// Ошибки кэша
+// Cache errors
 var (
 	ErrCacheMiss     = errors.New("cache miss")
 	ErrCacheDisabled = errors.New("cache disabled")
 	ErrCacheError    = errors.New("cache error")
 )
 
-// Ошибки rate limiting
+// rate limiting errors
 var (
 	ErrRateLimitExceeded = errors.New("rate limit exceeded")
 	ErrTooManyRequests   = errors.New("too many requests")
 )
 
-// Ошибки бизнес-логики
+// Business logic errors
 var (
 	ErrOperationNotAllowed = errors.New("operation not allowed")
 	ErrResourceLocked      = errors.New("resource is locked")
 	ErrInsufficientRights  = errors.New("insufficient rights")
 )
 
-// Ошибки поиска
+// Search errors
 var (
 	ErrSearchFailed       = errors.New("search failed")
 	ErrInvalidSearchQuery = errors.New("invalid search query")
 )
 
-// Ошибки аватара
+// Avatar errors
 var (
 	ErrInvalidAvatarFormat = errors.New("invalid avatar format")
 	ErrAvatarUploadFailed  = errors.New("avatar upload failed")
 	ErrAvatarDeleteFailed  = errors.New("avatar delete failed")
 )
 
-// Ошибки постов
+// Post errors
 var (
 	ErrPostNotFound      = errors.New("post not found")
 	ErrNoUpdateRows      = errors.New("no post update rows")
