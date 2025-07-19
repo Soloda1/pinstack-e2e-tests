@@ -133,6 +133,13 @@ var (
 	ErrNotificationAccessDenied   = errors.New("access to notification denied")
 	ErrNotificationLimitExceeded  = errors.New("notification limit exceeded")
 	ErrNotificationAlreadyExists  = errors.New("notification already exists")
+	ErrNotificationGetFailed      = errors.New("failed to get notification")
+	ErrNotificationSendFailed     = errors.New("failed to send notification")
+	ErrNotificationMarkReadFailed = errors.New("failed to mark notification as read")
+	ErrNotificationRemoveFailed   = errors.New("failed to remove notification")
+	ErrNotificationReadAllFailed  = errors.New("failed to mark all notifications as read")
+	ErrNotificationCountFailed    = errors.New("failed to get unread notification count")
+	ErrNotificationFeedFailed     = errors.New("failed to get notification feed")
 )
 
 // HTTP Client errors
