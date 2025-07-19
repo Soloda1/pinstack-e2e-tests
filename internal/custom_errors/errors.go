@@ -78,7 +78,7 @@ var (
 	ErrCacheError    = errors.New("cache error")
 )
 
-// rate limiting errors
+// Rate limiting errors
 var (
 	ErrRateLimitExceeded = errors.New("rate limit exceeded")
 	ErrTooManyRequests   = errors.New("too many requests")

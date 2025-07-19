@@ -82,10 +82,10 @@ func (c *Client) makeRequest(method, path string, queryParams url.Values, body i
 	if resp.StatusCode >= 400 {
 		var errorResp ErrorBody
 		if err := json.Unmarshal(respBody, &errorResp); err != nil {
-			c.log.Debug("Api error failed to unmarshall", slog.String("status code", resp.Status), slog.String("body", string(respBody)))
+			c.log.Debug("API error failed to unmarshal", slog.String("status code", resp.Status), slog.String("body", string(respBody)))
 			return custom_errors.ErrJSONUnmarshalFailed
 		}
-		c.log.Error("Api error", slog.String("status code", resp.Status), slog.Any("errors", errorResp))
+		c.log.Error("API error", slog.String("status code", resp.Status), slog.Any("errors", errorResp))
 		return fmt.Errorf("%s", errorResp.Message)
 	}
 

@@ -19,7 +19,7 @@ type RegisterResponse struct {
 }
 
 type LoginRequest struct {
-	Login    string `json:"login"` // Может быть email или username
+	Login    string `json:"login"` // Can be email or username
 	Password string `json:"password"`
 }
 
