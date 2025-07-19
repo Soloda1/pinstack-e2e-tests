@@ -1,7 +1,6 @@
 package client
 
 import (
-	"github.com/Soloda1/pinstack-e2e-tests/internal/custom_errors"
 	"log/slog"
 	"net/url"
 	"strconv"
@@ -24,7 +23,7 @@ func (uc *UserClient) CreateUser(req CreateUserRequest) (*CreateUserResponse, er
 	err := uc.client.Post("/v1/users", req, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to create user", slog.String("username", req.Username), slog.String("error", err.Error()))
-		return nil, custom_errors.ErrUserCreateFailed
+		return nil, err
 	}
 
 	uc.client.log.Info("User created successfully", slog.Int("user_id", response.ID), slog.String("username", response.Username))
@@ -38,7 +37,7 @@ func (uc *UserClient) GetUserByID(userID int) (*User, error) {
 	err := uc.client.Get("/v1/users/"+strconv.Itoa(userID), nil, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to get user by ID", slog.Int("user_id", userID), slog.String("error", err.Error()))
-		return nil, custom_errors.ErrUserGetFailed
+		return nil, err
 	}
 
 	uc.client.log.Debug("Got user by ID successfully", slog.Int("user_id", userID), slog.String("username", response.Username))
@@ -52,7 +51,7 @@ func (uc *UserClient) GetUserByUsername(username string) (*User, error) {
 	err := uc.client.Get("/v1/users/username/"+url.PathEscape(username), nil, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to get user by username", slog.String("username", username), slog.String("error", err.Error()))
-		return nil, custom_errors.ErrUserGetFailed
+		return nil, err
 	}
 
 	uc.client.log.Debug("Got user by username successfully", slog.String("username", username), slog.Int("user_id", response.ID))
@@ -66,7 +65,7 @@ func (uc *UserClient) GetUserByEmail(email string) (*User, error) {
 	err := uc.client.Get("/v1/users/email/"+url.PathEscape(email), nil, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to get user by email", slog.String("email", email), slog.String("error", err.Error()))
-		return nil, custom_errors.ErrUserGetFailed
+		return nil, err
 	}
 
 	uc.client.log.Debug("Got user by email successfully", slog.String("email", email), slog.Int("user_id", response.ID))
@@ -80,7 +79,7 @@ func (uc *UserClient) UpdateUser(req UpdateUserRequest) (*UpdateUserResponse, er
 	err := uc.client.Put("/v1/users/"+strconv.Itoa(req.ID), req, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to update user", slog.Int("user_id", req.ID), slog.String("error", err.Error()))
-		return nil, custom_errors.ErrUserUpdateFailed
+		return nil, err
 	}
 
 	uc.client.log.Info("User updated successfully", slog.Int("user_id", req.ID))
@@ -93,7 +92,7 @@ func (uc *UserClient) UpdateAvatar(userID int, req UpdateAvatarRequest) error {
 	err := uc.client.Put("/v1/users/"+strconv.Itoa(userID)+"/avatar", req, nil)
 	if err != nil {
 		uc.client.log.Error("Failed to update avatar", slog.Int("user_id", userID), slog.String("error", err.Error()))
-		return custom_errors.ErrAvatarUpdateFailed
+		return err
 	}
 
 	uc.client.log.Info("User avatar updated successfully", slog.Int("user_id", userID))
@@ -106,7 +105,7 @@ func (uc *UserClient) DeleteUser(userID int) error {
 	err := uc.client.Delete("/v1/users/"+strconv.Itoa(userID), nil)
 	if err != nil {
 		uc.client.log.Error("Failed to delete user", slog.Int("user_id", userID), slog.String("error", err.Error()))
-		return custom_errors.ErrUserDeleteFailed
+		return err
 	}
 
 	uc.client.log.Info("User deleted successfully", slog.Int("user_id", userID))
@@ -138,7 +137,7 @@ func (uc *UserClient) SearchUsers(query string, page, limit int) (*SearchUsersRe
 			slog.String("query", query),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrUserSearchFailed
+		return nil, err
 	}
 
 	uc.client.log.Debug("User search completed",

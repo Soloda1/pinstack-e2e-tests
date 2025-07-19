@@ -1,7 +1,6 @@
 package client
 
 import (
-	"github.com/Soloda1/pinstack-e2e-tests/internal/custom_errors"
 	"log/slog"
 )
 
@@ -22,7 +21,7 @@ func (ac *AuthClient) Register(req RegisterRequest) (*RegisterResponse, error) {
 	err := ac.client.Post("/v1/auth/register", req, &response)
 	if err != nil {
 		ac.client.log.Error("Failed to register user", slog.String("username", req.Username), slog.String("error", err.Error()))
-		return nil, custom_errors.ErrRegistrationFailed
+		return nil, err
 	}
 
 	ac.client.SetToken(response.AccessToken)
@@ -38,7 +37,7 @@ func (ac *AuthClient) Login(req LoginRequest) (*LoginResponse, error) {
 	err := ac.client.Post("/v1/auth/login", req, &response)
 	if err != nil {
 		ac.client.log.Error("Login failed", slog.String("login", req.Login), slog.String("error", err.Error()))
-		return nil, custom_errors.ErrLoginFailed
+		return nil, err
 	}
 
 	ac.client.SetToken(response.AccessToken)
@@ -54,7 +53,7 @@ func (ac *AuthClient) RefreshToken(req RefreshTokenRequest) (*RefreshTokenRespon
 	err := ac.client.Post("/v1/auth/refresh", req, &response)
 	if err != nil {
 		ac.client.log.Error("Failed to refresh token", slog.String("error", err.Error()))
-		return nil, custom_errors.ErrRefreshTokenFailed
+		return nil, err
 	}
 
 	ac.client.SetToken(response.AccessToken)
@@ -69,7 +68,7 @@ func (ac *AuthClient) Logout(req LogoutRequest) error {
 	err := ac.client.Post("/v1/auth/logout", req, nil)
 	if err != nil {
 		ac.client.log.Error("Logout failed", slog.String("error", err.Error()))
-		return custom_errors.ErrLogoutFailed
+		return err
 	}
 
 	ac.client.SetToken("")
@@ -85,7 +84,7 @@ func (ac *AuthClient) UpdatePassword(req UpdatePasswordRequest) (*UpdatePassword
 	err := ac.client.Post("/v1/auth/update-password", req, &response)
 	if err != nil {
 		ac.client.log.Error("Failed to update password", slog.String("error", err.Error()))
-		return nil, custom_errors.ErrPasswordUpdateFailed
+		return nil, err
 	}
 
 	ac.client.log.Info("Password updated successfully")

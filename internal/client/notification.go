@@ -1,7 +1,6 @@
 package client
 
 import (
-	"github.com/Soloda1/pinstack-e2e-tests/internal/custom_errors"
 	"log/slog"
 	"net/url"
 	"strconv"
@@ -27,7 +26,7 @@ func (nc *NotificationClient) GetNotificationByID(notificationID int) (*Notifica
 			slog.Int("notification_id", notificationID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrNotificationGetFailed
+		return nil, err
 	}
 
 	nc.client.log.Debug("Got notification by ID successfully",
@@ -52,7 +51,7 @@ func (nc *NotificationClient) SendNotification(req SendNotificationRequest) (*Se
 			slog.String("type", req.Type),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrNotificationSendFailed
+		return nil, err
 	}
 
 	nc.client.log.Info("Notification sent successfully",
@@ -72,7 +71,7 @@ func (nc *NotificationClient) ReadNotification(notificationID int) (*ReadNotific
 			slog.Int("notification_id", notificationID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrNotificationMarkReadFailed
+		return nil, err
 	}
 
 	nc.client.log.Debug("Notification marked as read successfully",
@@ -92,7 +91,7 @@ func (nc *NotificationClient) RemoveNotification(notificationID int) (*RemoveNot
 			slog.Int("notification_id", notificationID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrNotificationRemoveFailed
+		return nil, err
 	}
 
 	nc.client.log.Info("Notification removed successfully",
@@ -112,7 +111,7 @@ func (nc *NotificationClient) ReadAllUserNotifications(userID int) (*ReadAllUser
 			slog.Int("user_id", userID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrNotificationReadAllFailed
+		return nil, err
 	}
 
 	nc.client.log.Info("All notifications marked as read successfully",
@@ -132,7 +131,7 @@ func (nc *NotificationClient) GetUnreadCount(userID int) (*GetUnreadCountRespons
 			slog.Int("user_id", userID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrNotificationCountFailed
+		return nil, err
 	}
 
 	nc.client.log.Debug("Got unread notification count successfully",
@@ -166,7 +165,7 @@ func (nc *NotificationClient) GetUserNotificationFeed(userID, page, limit int) (
 			slog.Int("user_id", userID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrNotificationFeedFailed
+		return nil, err
 	}
 
 	nc.client.log.Debug("Got user notification feed successfully",

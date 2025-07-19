@@ -1,7 +1,6 @@
 package client
 
 import (
-	"github.com/Soloda1/pinstack-e2e-tests/internal/custom_errors"
 	"log/slog"
 	"net/url"
 	"strconv"
@@ -32,7 +31,7 @@ func (pc *PostClient) CreatePost(req CreatePostRequest) (*CreatePostResponse, er
 			slog.String("title", req.Title),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrPostCreateFailed
+		return nil, err
 	}
 
 	pc.client.log.Info("Post created successfully",
@@ -52,7 +51,7 @@ func (pc *PostClient) GetPostByID(postID int) (*Post, error) {
 			slog.Int("post_id", postID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrPostGetFailed
+		return nil, err
 	}
 
 	pc.client.log.Debug("Got post by ID successfully",
@@ -75,7 +74,7 @@ func (pc *PostClient) UpdatePost(postID int, req UpdatePostRequest) (*UpdatePost
 			slog.Int("post_id", postID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrPostUpdateFailed
+		return nil, err
 	}
 
 	pc.client.log.Info("Post updated successfully",
@@ -94,7 +93,7 @@ func (pc *PostClient) DeletePost(postID int) error {
 			slog.Int("post_id", postID),
 			slog.String("error", err.Error()),
 		)
-		return custom_errors.ErrPostDeleteFailed
+		return err
 	}
 
 	pc.client.log.Info("Post deleted successfully", slog.Int("post_id", postID))
@@ -139,7 +138,7 @@ func (pc *PostClient) ListPosts(authorID int, createdAfter, createdBefore time.T
 			slog.Int("author_id", authorID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrPostListFailed
+		return nil, err
 	}
 
 	pc.client.log.Debug("Posts listed successfully",

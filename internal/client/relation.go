@@ -1,7 +1,6 @@
 package client
 
 import (
-	"github.com/Soloda1/pinstack-e2e-tests/internal/custom_errors"
 	"log/slog"
 )
 
@@ -29,7 +28,7 @@ func (rc *RelationClient) Follow(followeeID int) (*FollowResponse, error) {
 			slog.Int("followee_id", followeeID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrFollowRelationCreateFail
+		return nil, err
 	}
 
 	rc.client.log.Info("User followed successfully",
@@ -53,7 +52,7 @@ func (rc *RelationClient) Unfollow(followeeID int) (*UnfollowResponse, error) {
 			slog.Int("followee_id", followeeID),
 			slog.String("error", err.Error()),
 		)
-		return nil, custom_errors.ErrFollowRelationDeleteFail
+		return nil, err
 	}
 
 	rc.client.log.Info("User unfollowed successfully",

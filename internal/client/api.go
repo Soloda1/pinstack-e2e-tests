@@ -80,14 +80,14 @@ func (c *Client) makeRequest(method, path string, queryParams url.Values, body i
 		return custom_errors.ErrResponseReadFailed
 	}
 
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		var errorResp map[string]string
+	if resp.StatusCode >= 400 {
+		var errorResp ErrorBody
 		if err := json.Unmarshal(respBody, &errorResp); err != nil {
 			c.log.Debug("api error", slog.String("status code", resp.Status), slog.String("body", string(respBody)))
-			return custom_errors.ErrStatusCode
+			return custom_errors.ErrJSONUnmarshalFailed
 		}
 		c.log.Error("api error", slog.String("status code", resp.Status), slog.Any("errors", errorResp))
-		return custom_errors.ErrAPIError
+		return fmt.Errorf("%s", errorResp.Message)
 	}
 
 	if result != nil && len(respBody) > 0 {
