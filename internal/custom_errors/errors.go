@@ -12,6 +12,7 @@ var (
 	ErrInvalidPassword   = errors.New("invalid password")
 	ErrPasswordMismatch  = errors.New("passwords do not match")
 	ErrUserAlreadyExists = errors.New("user already exists")
+	ErrUserCreateFailed  = errors.New("failed to create user")
 )
 
 // Ошибки аутентификации
@@ -22,6 +23,11 @@ var (
 	ErrTokenExpired          = errors.New("token expired")
 	ErrInvalidToken          = errors.New("invalid token")
 	ErrTokenGenerationFailed = errors.New("token generation failed")
+	ErrRegistrationFailed    = errors.New("failed to register user")
+	ErrLoginFailed           = errors.New("failed to login")
+	ErrRefreshTokenFailed    = errors.New("failed to refresh token")
+	ErrLogoutFailed          = errors.New("failed to logout")
+	ErrPasswordUpdateFailed  = errors.New("failed to update password")
 )
 
 // Ошибки валидации
