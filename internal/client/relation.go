@@ -3,7 +3,6 @@ package client
 import (
 	"github.com/Soloda1/pinstack-e2e-tests/internal/custom_errors"
 	"log/slog"
-	"strconv"
 )
 
 type RelationClient struct {
