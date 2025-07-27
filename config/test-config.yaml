@@ -33,7 +33,7 @@ services:
 
 jwt:
   secret: "my-secret"
-  access_expires_at: "60m"
-  refresh_expires_at: "6000m"
+  access_expires_at: "1m"
+  refresh_expires_at: "10m"
 
 

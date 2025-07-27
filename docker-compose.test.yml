@@ -32,7 +32,7 @@ services:
         condition: service_healthy
     volumes:
       - ../pinstack-user-service/migrations:/app/migrations
-      - ../pinstack-user-service/config:/app/config
+      - ./config/user-service/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
@@ -62,6 +62,8 @@ services:
     depends_on:
       user-migrator-test:
         condition: service_completed_successfully
+    volumes:
+      - ./config/user-service/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
@@ -107,7 +109,7 @@ services:
         condition: service_healthy
     volumes:
       - ../pinstack-auth-service/migrations:/app/migrations
-      - ../pinstack-auth-service/config:/app/config
+      - ./config/auth-service/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
@@ -125,7 +127,7 @@ services:
       user-service-test:
         condition: service_started
     volumes:
-      - ../pinstack-auth-service/config:/app/config
+      - ./config/auth-service/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
@@ -171,7 +173,7 @@ services:
         condition: service_healthy
     volumes:
       - ../pinstack-post-service/migrations:/app/migrations
-      - ../pinstack-post-service/config:/app/config
+      - ./config/post-service/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
@@ -189,7 +191,7 @@ services:
       user-service-test:
         condition: service_started
     volumes:
-      - ../pinstack-post-service/config:/app/config
+      - ./config/post-service/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
@@ -235,7 +237,7 @@ services:
         condition: service_healthy
     volumes:
       - ../pinstack-relation-service/migrations:/app/migrations
-      - ../pinstack-relation-service/config:/app/config
+      - ./config/relation-service/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
@@ -259,7 +261,7 @@ services:
       kafka3-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-relation-service/config:/app/config
+      - ./config/relation-service/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
@@ -283,6 +285,8 @@ services:
     depends_on:
       - user-service-test
       - auth-service-test
+    volumes:
+      - ./config/api-gateway/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
@@ -304,7 +308,7 @@ services:
     ports:
       - "42800:80"
     volumes:
-      - ../config/nginx.test.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx.test.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - api-gateway-test
     networks:
@@ -475,7 +479,7 @@ services:
         condition: service_healthy
     volumes:
       - ../pinstack-notification-service/migrations:/app/migrations
-      - ../pinstack-notification-service/config:/app/config
+      - ./config/notification-service/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
@@ -501,7 +505,7 @@ services:
       kafka3-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-notification-service/config:/app/config
+      - ./config/notification-service/test-config.yaml:/app/config/config.yaml
     environment:
       - ENV=test
     networks:
