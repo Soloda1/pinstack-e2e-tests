@@ -304,7 +304,7 @@ services:
     ports:
       - "42800:80"
     volumes:
-      - ./nginx.test.conf:/etc/nginx/nginx.conf:ro
+      - ../config/nginx.test.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - api-gateway-test
     networks:
