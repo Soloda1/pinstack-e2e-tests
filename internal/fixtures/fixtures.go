@@ -1,3 +1,3 @@
-package database
+package fixtures
 
 // Создание тестовых данных для базы данных

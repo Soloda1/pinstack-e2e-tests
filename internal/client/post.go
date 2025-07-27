@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 	"log/slog"
 	"net/url"
 	"strconv"
@@ -17,14 +18,14 @@ func NewPostClient(client *Client) *PostClient {
 	}
 }
 
-func (pc *PostClient) CreatePost(req CreatePostRequest) (*CreatePostResponse, error) {
+func (pc *PostClient) CreatePost(req fixtures.CreatePostRequest) (*fixtures.CreatePostResponse, error) {
 	pc.client.log.Info("Creating new post",
 		slog.String("title", req.Title),
 		slog.Int("media_count", len(req.MediaItems)),
 		slog.Int("tags_count", len(req.Tags)),
 	)
 
-	var response CreatePostResponse
+	var response fixtures.CreatePostResponse
 	err := pc.client.Post("/v1/posts", req, &response)
 	if err != nil {
 		pc.client.log.Error("Failed to create post",
@@ -41,10 +42,10 @@ func (pc *PostClient) CreatePost(req CreatePostRequest) (*CreatePostResponse, er
 	return &response, nil
 }
 
-func (pc *PostClient) GetPostByID(postID int) (*Post, error) {
+func (pc *PostClient) GetPostByID(postID int) (*fixtures.Post, error) {
 	pc.client.log.Debug("Getting post by ID", slog.Int("post_id", postID))
 
-	var response Post
+	var response fixtures.Post
 	err := pc.client.Get("/v1/posts/"+strconv.Itoa(postID), nil, &response)
 	if err != nil {
 		pc.client.log.Error("Failed to get post by ID",
@@ -61,13 +62,13 @@ func (pc *PostClient) GetPostByID(postID int) (*Post, error) {
 	return &response, nil
 }
 
-func (pc *PostClient) UpdatePost(postID int, req UpdatePostRequest) (*UpdatePostResponse, error) {
+func (pc *PostClient) UpdatePost(postID int, req fixtures.UpdatePostRequest) (*fixtures.UpdatePostResponse, error) {
 	pc.client.log.Info("Updating post",
 		slog.Int("post_id", postID),
 		slog.String("title", req.Title),
 	)
 
-	var response UpdatePostResponse
+	var response fixtures.UpdatePostResponse
 	err := pc.client.Put("/v1/posts/"+strconv.Itoa(postID), req, &response)
 	if err != nil {
 		pc.client.log.Error("Failed to update post",
@@ -100,7 +101,7 @@ func (pc *PostClient) DeletePost(postID int) error {
 	return nil
 }
 
-func (pc *PostClient) ListPosts(authorID int, createdAfter, createdBefore time.Time, offset, limit int) (*ListPostsResponse, error) {
+func (pc *PostClient) ListPosts(authorID int, createdAfter, createdBefore time.Time, offset, limit int) (*fixtures.ListPostsResponse, error) {
 	pc.client.log.Debug("Listing posts",
 		slog.Int("author_id", authorID),
 		slog.Int("offset", offset),
@@ -131,7 +132,7 @@ func (pc *PostClient) ListPosts(authorID int, createdAfter, createdBefore time.T
 		queryParams.Set("limit", strconv.Itoa(limit))
 	}
 
-	var response ListPostsResponse
+	var response fixtures.ListPostsResponse
 	err := pc.client.Get("/v1/posts/list", queryParams, &response)
 	if err != nil {
 		pc.client.log.Error("Failed to list posts",

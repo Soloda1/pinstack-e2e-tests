@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 	"log/slog"
 	"net/url"
 	"strconv"
@@ -16,10 +17,10 @@ func NewNotificationClient(client *Client) *NotificationClient {
 	}
 }
 
-func (nc *NotificationClient) GetNotificationByID(notificationID int) (*Notification, error) {
+func (nc *NotificationClient) GetNotificationByID(notificationID int) (*fixtures.Notification, error) {
 	nc.client.log.Debug("Getting notification by ID", slog.Int("notification_id", notificationID))
 
-	var response Notification
+	var response fixtures.Notification
 	err := nc.client.Get("/v1/notification/"+strconv.Itoa(notificationID), nil, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to get notification by ID",
@@ -37,13 +38,13 @@ func (nc *NotificationClient) GetNotificationByID(notificationID int) (*Notifica
 	return &response, nil
 }
 
-func (nc *NotificationClient) SendNotification(req SendNotificationRequest) (*SendNotificationResponse, error) {
+func (nc *NotificationClient) SendNotification(req fixtures.SendNotificationRequest) (*fixtures.SendNotificationResponse, error) {
 	nc.client.log.Info("Sending notification",
 		slog.Int("user_id", req.UserID),
 		slog.String("type", req.Type),
 	)
 
-	var response SendNotificationResponse
+	var response fixtures.SendNotificationResponse
 	err := nc.client.Post("/v1/notification/send", req, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to send notification",
@@ -61,10 +62,10 @@ func (nc *NotificationClient) SendNotification(req SendNotificationRequest) (*Se
 	return &response, nil
 }
 
-func (nc *NotificationClient) ReadNotification(notificationID int) (*ReadNotificationResponse, error) {
+func (nc *NotificationClient) ReadNotification(notificationID int) (*fixtures.ReadNotificationResponse, error) {
 	nc.client.log.Debug("Marking notification as read", slog.Int("notification_id", notificationID))
 
-	var response ReadNotificationResponse
+	var response fixtures.ReadNotificationResponse
 	err := nc.client.Put("/v1/notification/"+strconv.Itoa(notificationID)+"/read", nil, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to mark notification as read",
@@ -81,10 +82,10 @@ func (nc *NotificationClient) ReadNotification(notificationID int) (*ReadNotific
 	return &response, nil
 }
 
-func (nc *NotificationClient) RemoveNotification(notificationID int) (*RemoveNotificationResponse, error) {
+func (nc *NotificationClient) RemoveNotification(notificationID int) (*fixtures.RemoveNotificationResponse, error) {
 	nc.client.log.Info("Removing notification", slog.Int("notification_id", notificationID))
 
-	var response RemoveNotificationResponse
+	var response fixtures.RemoveNotificationResponse
 	err := nc.client.Delete("/v1/notification/"+strconv.Itoa(notificationID), &response)
 	if err != nil {
 		nc.client.log.Error("Failed to remove notification",
@@ -101,10 +102,10 @@ func (nc *NotificationClient) RemoveNotification(notificationID int) (*RemoveNot
 	return &response, nil
 }
 
-func (nc *NotificationClient) ReadAllUserNotifications(userID int) (*ReadAllUserNotificationsResponse, error) {
+func (nc *NotificationClient) ReadAllUserNotifications(userID int) (*fixtures.ReadAllUserNotificationsResponse, error) {
 	nc.client.log.Info("Marking all notifications as read for user", slog.Int("user_id", userID))
 
-	var response ReadAllUserNotificationsResponse
+	var response fixtures.ReadAllUserNotificationsResponse
 	err := nc.client.Put("/v1/notification/read-all/"+strconv.Itoa(userID), nil, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to mark all notifications as read",
@@ -121,10 +122,10 @@ func (nc *NotificationClient) ReadAllUserNotifications(userID int) (*ReadAllUser
 	return &response, nil
 }
 
-func (nc *NotificationClient) GetUnreadCount(userID int) (*GetUnreadCountResponse, error) {
+func (nc *NotificationClient) GetUnreadCount(userID int) (*fixtures.GetUnreadCountResponse, error) {
 	nc.client.log.Debug("Getting unread notification count", slog.Int("user_id", userID))
 
-	var response GetUnreadCountResponse
+	var response fixtures.GetUnreadCountResponse
 	err := nc.client.Get("/v1/notification/unread-count/"+strconv.Itoa(userID), nil, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to get unread notification count",
@@ -141,7 +142,7 @@ func (nc *NotificationClient) GetUnreadCount(userID int) (*GetUnreadCountRespons
 	return &response, nil
 }
 
-func (nc *NotificationClient) GetUserNotificationFeed(userID, page, limit int) (*GetUserNotificationFeedResponse, error) {
+func (nc *NotificationClient) GetUserNotificationFeed(userID, page, limit int) (*fixtures.GetUserNotificationFeedResponse, error) {
 	nc.client.log.Debug("Getting user notification feed",
 		slog.Int("user_id", userID),
 		slog.Int("page", page),
@@ -158,7 +159,7 @@ func (nc *NotificationClient) GetUserNotificationFeed(userID, page, limit int) (
 		queryParams.Set("limit", strconv.Itoa(limit))
 	}
 
-	var response GetUserNotificationFeedResponse
+	var response fixtures.GetUserNotificationFeedResponse
 	err := nc.client.Get("/v1/notification/feed/"+strconv.Itoa(userID), queryParams, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to get notification feed",

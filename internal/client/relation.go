@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 	"log/slog"
 )
 
@@ -14,14 +15,14 @@ func NewRelationClient(client *Client) *RelationClient {
 	}
 }
 
-func (rc *RelationClient) Follow(followeeID int) (*FollowResponse, error) {
+func (rc *RelationClient) Follow(followeeID int) (*fixtures.FollowResponse, error) {
 	rc.client.log.Info("Following user", slog.Int("followee_id", followeeID))
 
-	req := FollowRequest{
+	req := fixtures.FollowRequest{
 		FolloweeID: followeeID,
 	}
 
-	var response FollowResponse
+	var response fixtures.FollowResponse
 	err := rc.client.Post("/v1/relation/follow", req, &response)
 	if err != nil {
 		rc.client.log.Error("Failed to follow user",
@@ -38,14 +39,14 @@ func (rc *RelationClient) Follow(followeeID int) (*FollowResponse, error) {
 	return &response, nil
 }
 
-func (rc *RelationClient) Unfollow(followeeID int) (*UnfollowResponse, error) {
+func (rc *RelationClient) Unfollow(followeeID int) (*fixtures.UnfollowResponse, error) {
 	rc.client.log.Info("Unfollowing user", slog.Int("followee_id", followeeID))
 
-	req := UnfollowRequest{
+	req := fixtures.UnfollowRequest{
 		FolloweeID: followeeID,
 	}
 
-	var response UnfollowResponse
+	var response fixtures.UnfollowResponse
 	err := rc.client.Post("/v1/relation/unfollow", req, &response)
 	if err != nil {
 		rc.client.log.Error("Failed to unfollow user",

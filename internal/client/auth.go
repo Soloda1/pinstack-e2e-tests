@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 	"log/slog"
 )
 
@@ -14,10 +15,10 @@ func NewAuthClient(client *Client) *AuthClient {
 	}
 }
 
-func (ac *AuthClient) Register(req RegisterRequest) (*RegisterResponse, error) {
+func (ac *AuthClient) Register(req fixtures.RegisterRequest) (*fixtures.RegisterResponse, error) {
 	ac.client.log.Info("Registering new user", slog.String("username", req.Username), slog.String("email", req.Email))
 
-	var response RegisterResponse
+	var response fixtures.RegisterResponse
 	err := ac.client.Post("/v1/auth/register", req, &response)
 	if err != nil {
 		ac.client.log.Error("Failed to register user", slog.String("username", req.Username), slog.String("error", err.Error()))
@@ -30,10 +31,10 @@ func (ac *AuthClient) Register(req RegisterRequest) (*RegisterResponse, error) {
 	return &response, nil
 }
 
-func (ac *AuthClient) Login(req LoginRequest) (*LoginResponse, error) {
+func (ac *AuthClient) Login(req fixtures.LoginRequest) (*fixtures.LoginResponse, error) {
 	ac.client.log.Info("User login attempt", slog.String("login", req.Login))
 
-	var response LoginResponse
+	var response fixtures.LoginResponse
 	err := ac.client.Post("/v1/auth/login", req, &response)
 	if err != nil {
 		ac.client.log.Error("Login failed", slog.String("login", req.Login), slog.String("error", err.Error()))
@@ -46,10 +47,10 @@ func (ac *AuthClient) Login(req LoginRequest) (*LoginResponse, error) {
 	return &response, nil
 }
 
-func (ac *AuthClient) RefreshToken(req RefreshTokenRequest) (*RefreshTokenResponse, error) {
+func (ac *AuthClient) RefreshToken(req fixtures.RefreshTokenRequest) (*fixtures.RefreshTokenResponse, error) {
 	ac.client.log.Debug("Refreshing access token")
 
-	var response RefreshTokenResponse
+	var response fixtures.RefreshTokenResponse
 	err := ac.client.Post("/v1/auth/refresh", req, &response)
 	if err != nil {
 		ac.client.log.Error("Failed to refresh token", slog.String("error", err.Error()))
@@ -62,7 +63,7 @@ func (ac *AuthClient) RefreshToken(req RefreshTokenRequest) (*RefreshTokenRespon
 	return &response, nil
 }
 
-func (ac *AuthClient) Logout(req LogoutRequest) error {
+func (ac *AuthClient) Logout(req fixtures.LogoutRequest) error {
 	ac.client.log.Info("User logout attempt")
 
 	err := ac.client.Post("/v1/auth/logout", req, nil)
@@ -77,10 +78,10 @@ func (ac *AuthClient) Logout(req LogoutRequest) error {
 	return nil
 }
 
-func (ac *AuthClient) UpdatePassword(req UpdatePasswordRequest) (*UpdatePasswordResponse, error) {
+func (ac *AuthClient) UpdatePassword(req fixtures.UpdatePasswordRequest) (*fixtures.UpdatePasswordResponse, error) {
 	ac.client.log.Info("Updating user password")
 
-	var response UpdatePasswordResponse
+	var response fixtures.UpdatePasswordResponse
 	err := ac.client.Post("/v1/auth/update-password", req, &response)
 	if err != nil {
 		ac.client.log.Error("Failed to update password", slog.String("error", err.Error()))

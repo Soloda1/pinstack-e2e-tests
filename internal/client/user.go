@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 	"log/slog"
 	"net/url"
 	"strconv"
@@ -16,10 +17,10 @@ func NewUserClient(client *Client) *UserClient {
 	}
 }
 
-func (uc *UserClient) CreateUser(req CreateUserRequest) (*CreateUserResponse, error) {
+func (uc *UserClient) CreateUser(req fixtures.CreateUserRequest) (*fixtures.CreateUserResponse, error) {
 	uc.client.log.Info("Creating new user", slog.String("username", req.Username), slog.String("email", req.Email))
 
-	var response CreateUserResponse
+	var response fixtures.CreateUserResponse
 	err := uc.client.Post("/v1/users", req, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to create user", slog.String("username", req.Username), slog.String("error", err.Error()))
@@ -30,10 +31,10 @@ func (uc *UserClient) CreateUser(req CreateUserRequest) (*CreateUserResponse, er
 	return &response, nil
 }
 
-func (uc *UserClient) GetUserByID(userID int) (*User, error) {
+func (uc *UserClient) GetUserByID(userID int) (*fixtures.User, error) {
 	uc.client.log.Debug("Getting user by ID", slog.Int("user_id", userID))
 
-	var response User
+	var response fixtures.User
 	err := uc.client.Get("/v1/users/"+strconv.Itoa(userID), nil, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to get user by ID", slog.Int("user_id", userID), slog.String("error", err.Error()))
@@ -44,10 +45,10 @@ func (uc *UserClient) GetUserByID(userID int) (*User, error) {
 	return &response, nil
 }
 
-func (uc *UserClient) GetUserByUsername(username string) (*User, error) {
+func (uc *UserClient) GetUserByUsername(username string) (*fixtures.User, error) {
 	uc.client.log.Debug("Getting user by username", slog.String("username", username))
 
-	var response User
+	var response fixtures.User
 	err := uc.client.Get("/v1/users/username/"+url.PathEscape(username), nil, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to get user by username", slog.String("username", username), slog.String("error", err.Error()))
@@ -58,10 +59,10 @@ func (uc *UserClient) GetUserByUsername(username string) (*User, error) {
 	return &response, nil
 }
 
-func (uc *UserClient) GetUserByEmail(email string) (*User, error) {
+func (uc *UserClient) GetUserByEmail(email string) (*fixtures.User, error) {
 	uc.client.log.Debug("Getting user by email", slog.String("email", email))
 
-	var response User
+	var response fixtures.User
 	err := uc.client.Get("/v1/users/email/"+url.PathEscape(email), nil, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to get user by email", slog.String("email", email), slog.String("error", err.Error()))
@@ -72,10 +73,10 @@ func (uc *UserClient) GetUserByEmail(email string) (*User, error) {
 	return &response, nil
 }
 
-func (uc *UserClient) UpdateUser(req UpdateUserRequest) (*UpdateUserResponse, error) {
+func (uc *UserClient) UpdateUser(req fixtures.UpdateUserRequest) (*fixtures.UpdateUserResponse, error) {
 	uc.client.log.Info("Updating user", slog.Int("user_id", req.ID))
 
-	var response UpdateUserResponse
+	var response fixtures.UpdateUserResponse
 	err := uc.client.Put("/v1/users/"+strconv.Itoa(req.ID), req, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to update user", slog.Int("user_id", req.ID), slog.String("error", err.Error()))
@@ -86,7 +87,7 @@ func (uc *UserClient) UpdateUser(req UpdateUserRequest) (*UpdateUserResponse, er
 	return &response, nil
 }
 
-func (uc *UserClient) UpdateAvatar(userID int, req UpdateAvatarRequest) error {
+func (uc *UserClient) UpdateAvatar(userID int, req fixtures.UpdateAvatarRequest) error {
 	uc.client.log.Info("Updating user avatar", slog.Int("user_id", userID))
 
 	err := uc.client.Put("/v1/users/"+strconv.Itoa(userID)+"/avatar", req, nil)
@@ -112,7 +113,7 @@ func (uc *UserClient) DeleteUser(userID int) error {
 	return nil
 }
 
-func (uc *UserClient) SearchUsers(query string, page, limit int) (*SearchUsersResponse, error) {
+func (uc *UserClient) SearchUsers(query string, page, limit int) (*fixtures.SearchUsersResponse, error) {
 	uc.client.log.Debug("Searching users",
 		slog.String("query", query),
 		slog.Int("page", page),
@@ -130,7 +131,7 @@ func (uc *UserClient) SearchUsers(query string, page, limit int) (*SearchUsersRe
 		queryParams.Set("limit", strconv.Itoa(limit))
 	}
 
-	var response SearchUsersResponse
+	var response fixtures.SearchUsersResponse
 	err := uc.client.Get("/v1/users/search", queryParams, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to search users",
