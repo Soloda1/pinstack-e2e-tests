@@ -234,3 +234,8 @@ type GetUserNotificationFeedResponse struct {
 	Total         int            `json:"total"`
 	TotalPages    int            `json:"total_pages"`
 }
+
+type ErrorBody struct {
+	Status  int    `json:"status,omitempty"`
+	Message string `json:"message,omitempty"`
+}
