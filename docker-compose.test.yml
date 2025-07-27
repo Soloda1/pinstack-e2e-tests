@@ -1,0 +1,520 @@
+services:
+  ######################
+  # Postgres (user-service)
+  ######################
+  user-db-test:
+    image: postgres:16-alpine
+    container_name: pinstack-user-db-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: userservice_test
+      POSTGRES_PORT: 5432
+    command: postgres -p 5432
+    # Удалены постоянные тома для тестовой среды
+    ports:
+      - "42432:5432"
+    networks:
+      - pinstack-test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  user-migrator-test:
+    container_name: pinstack-user-migrator-test
+    build:
+      context: ../pinstack-user-service
+      dockerfile: Dockerfile.migrator
+    depends_on:
+      user-db-test:
+        condition: service_healthy
+    volumes:
+      - ../pinstack-user-service/migrations:/app/migrations
+      - ../pinstack-user-service/config:/app/config
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    command: ./migrator -command up
+
+  pgadmin-test:
+    image: dpage/pgadmin4:latest
+    container_name: pinstack-user-pgadmin-test
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 5050
+    ports:
+      - "42050:5050"
+    depends_on:
+      user-db-test:
+        condition: service_healthy
+    networks:
+      - pinstack-test
+
+  user-service-test:
+    container_name: pinstack-user-service-test
+    build:
+      context: ../pinstack-user-service
+      dockerfile: Dockerfile
+    depends_on:
+      user-migrator-test:
+        condition: service_completed_successfully
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    ports:
+      - "42051:50051"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  ######################
+  # Postgres (auth-service)
+  ######################
+  auth-db-test:
+    image: postgres:16-alpine
+    container_name: pinstack-auth-db-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: authservice_test
+      POSTGRES_PORT: 5432
+    command: postgres -p 5432
+    # Удалены постоянные тома для тестовой среды
+    ports:
+      - "42433:5432"
+    networks:
+      - pinstack-test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-migrator-test:
+    container_name: pinstack-auth-migrator-test
+    build:
+      context: ../pinstack-auth-service
+      dockerfile: Dockerfile.migrator
+    depends_on:
+      auth-db-test:
+        condition: service_healthy
+    volumes:
+      - ../pinstack-auth-service/migrations:/app/migrations
+      - ../pinstack-auth-service/config:/app/config
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    command: ./migrator -command up
+
+  auth-service-test:
+    container_name: pinstack-auth-service-test
+    build:
+      context: ../pinstack-auth-service
+      dockerfile: Dockerfile
+    depends_on:
+      auth-migrator-test:
+        condition: service_completed_successfully
+      user-service-test:
+        condition: service_started
+    volumes:
+      - ../pinstack-auth-service/config:/app/config
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    ports:
+      - "42052:50052"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  ######################
+  # Postgres (post-service)
+  ######################
+  post-db-test:
+    image: postgres:16-alpine
+    container_name: pinstack-post-db-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postservice_test
+      POSTGRES_PORT: 5432
+    command: postgres -p 5432
+    # Удалены постоянные тома для тестовой среды
+    ports:
+      - "42434:5432"
+    networks:
+      - pinstack-test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  post-migrator-test:
+    container_name: pinstack-post-migrator-test
+    build:
+      context: ../pinstack-post-service
+      dockerfile: Dockerfile.migrator
+    depends_on:
+      post-db-test:
+        condition: service_healthy
+    volumes:
+      - ../pinstack-post-service/migrations:/app/migrations
+      - ../pinstack-post-service/config:/app/config
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    command: ./migrator -command up
+
+  post-service-test:
+    container_name: pinstack-post-service-test
+    build:
+      context: ../pinstack-post-service
+      dockerfile: Dockerfile
+    depends_on:
+      post-migrator-test:
+        condition: service_completed_successfully
+      user-service-test:
+        condition: service_started
+    volumes:
+      - ../pinstack-post-service/config:/app/config
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    ports:
+      - "42053:50053"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  ######################
+  # Postgres (relation-service)
+  ######################
+  relation-db-test:
+    image: postgres:16-alpine
+    container_name: pinstack-relation-db-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: relationservice_test
+      POSTGRES_PORT: 5432
+    command: postgres -p 5432
+    # Удалены постоянные тома для тестовой среды
+    ports:
+      - "42435:5432"
+    networks:
+      - pinstack-test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  relation-migrator-test:
+    container_name: pinstack-relation-migrator-test
+    build:
+      context: ../pinstack-relation-service
+      dockerfile: Dockerfile.migrator
+    depends_on:
+      relation-db-test:
+        condition: service_healthy
+    volumes:
+      - ../pinstack-relation-service/migrations:/app/migrations
+      - ../pinstack-relation-service/config:/app/config
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    command: ./migrator -command up
+
+  relation-service-test:
+    container_name: pinstack-relation-service-test
+    build:
+      context: ../pinstack-relation-service
+      dockerfile: Dockerfile
+    depends_on:
+      relation-migrator-test:
+        condition: service_completed_successfully
+      user-service-test:
+        condition: service_started
+      kafka1-test:
+        condition: service_healthy
+      kafka2-test:
+        condition: service_healthy
+      kafka3-test:
+        condition: service_healthy
+    volumes:
+      - ../pinstack-relation-service/config:/app/config
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    ports:
+      - "42054:50054"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  ##################
+  # API Gateway
+  ##################
+  api-gateway-test:
+    container_name: pinstack-api-gateway-test
+    build:
+      context: ../pinstack-api-gateway
+      dockerfile: Dockerfile
+    depends_on:
+      - user-service-test
+      - auth-service-test
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    ports:
+      - "42080:8080"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  ##################
+  # NGINX
+  ##################
+  nginx-test:
+    image: nginx:alpine
+    container_name: pinstack-nginx-test
+    ports:
+      - "42800:80"
+    volumes:
+      - ./nginx.test.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-gateway-test
+    networks:
+      - pinstack-test
+
+  ##################
+  # Kafka (KRaft mode for notifications)
+  ##################
+  kafka1-test:
+    image: confluentinc/cp-kafka:latest
+    container_name: pinstack-kafka1-test
+    hostname: kafka1-test
+    ports:
+      - "42092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1-test:9093,2@kafka2-test:9093,3@kafka3-test:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka1-test:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'TEST3OEVBNTcwNTJENDM2Qk'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG4J_ROOT_LOGLEVEL: "ERROR"
+      KAFKA_LOG4J_LOGGERS: "org.apache.kafka=ERROR,kafka=ERROR,kafka.cluster=ERROR,kafka.controller=ERROR,kafka.coordinator=ERROR,kafka.log=ERROR,kafka.server=ERROR,kafka.zookeeper=ERROR,kafka.network=ERROR,state.change.logger=ERROR"
+      KAFKA_TOOLS_LOG4J_LOGLEVEL: "ERROR"
+      KAFKA_LOG4J_APPENDER_STDOUT_THRESHOLD: "ERROR"
+      KAFKA_AUTHORIZER_LOGGER_NAME: "ERROR"
+      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=false"
+      KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
+      KAFKA_LOG_LEVEL: "ERROR"
+    # Удалены постоянные тома для тестовой среды
+    networks:
+      - pinstack-test
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka1-test:9092 --list > /dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+        tag: "kafka1-test-only-errors"
+        env: "KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR"
+
+  kafka2-test:
+    image: confluentinc/cp-kafka:latest
+    container_name: pinstack-kafka2-test
+    hostname: kafka2-test
+    ports:
+      - "42093:9092"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1-test:9093,2@kafka2-test:9093,3@kafka3-test:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka2-test:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'TEST3OEVBNTcwNTJENDM2Qk'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG4J_ROOT_LOGLEVEL: "ERROR"
+      KAFKA_LOG4J_LOGGERS: "org.apache.kafka=ERROR,kafka=ERROR,kafka.cluster=ERROR,kafka.controller=ERROR,kafka.coordinator=ERROR,kafka.log=ERROR,kafka.server=ERROR,kafka.zookeeper=ERROR,kafka.network=ERROR,state.change.logger=ERROR"
+      KAFKA_TOOLS_LOG4J_LOGLEVEL: "ERROR"
+      KAFKA_LOG4J_APPENDER_STDOUT_THRESHOLD: "ERROR"
+      KAFKA_AUTHORIZER_LOGGER_NAME: "ERROR"
+      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=false"
+      KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
+      KAFKA_LOG_LEVEL: "ERROR"
+    # Удалены постоянные тома для тестовой среды
+    networks:
+      - pinstack-test
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka2-test:9092 --list > /dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+        tag: "kafka2-test-only-errors"
+        env: "KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR"
+
+  kafka3-test:
+    image: confluentinc/cp-kafka:latest
+    container_name: pinstack-kafka3-test
+    hostname: kafka3-test
+    ports:
+      - "42094:9092"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1-test:9093,2@kafka2-test:9093,3@kafka3-test:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka3-test:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'TEST3OEVBNTcwNTJENDM2Qk'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG4J_ROOT_LOGLEVEL: "ERROR"
+      KAFKA_LOG4J_LOGGERS: "org.apache.kafka=ERROR,kafka=ERROR,kafka.cluster=ERROR,kafka.controller=ERROR,kafka.coordinator=ERROR,kafka.log=ERROR,kafka.server=ERROR,kafka.zookeeper=ERROR,kafka.network=ERROR,state.change.logger=ERROR"
+      KAFKA_TOOLS_LOG4J_LOGLEVEL: "ERROR"
+      KAFKA_LOG4J_APPENDER_STDOUT_THRESHOLD: "ERROR"
+      KAFKA_AUTHORIZER_LOGGER_NAME: "ERROR"
+      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=false"
+      KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
+      KAFKA_LOG_LEVEL: "ERROR"
+    # Удалены постоянные тома для тестовой среды
+    networks:
+      - pinstack-test
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka3-test:9092 --list > /dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+        tag: "kafka3-test-only-errors"
+        env: "KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR"
+
+  ######################
+  # Postgres (notification-service)
+  ######################
+  notification-db-test:
+    image: postgres:16-alpine
+    container_name: pinstack-notification-db-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: notificationservice_test
+      POSTGRES_PORT: 5432
+    command: postgres -p 5432
+    # Удалены постоянные тома для тестовой среды
+    ports:
+      - "42436:5432"
+    networks:
+      - pinstack-test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  notification-migrator-test:
+    container_name: pinstack-notification-migrator-test
+    build:
+      context: ../pinstack-notification-service
+      dockerfile: Dockerfile.migrator
+    depends_on:
+      notification-db-test:
+        condition: service_healthy
+    volumes:
+      - ../pinstack-notification-service/migrations:/app/migrations
+      - ../pinstack-notification-service/config:/app/config
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    command: ./migrator -command up
+
+  notification-service-test:
+    container_name: pinstack-notification-service-test
+    build:
+      context: ../pinstack-notification-service
+      dockerfile: Dockerfile
+    depends_on:
+      notification-migrator-test:
+        condition: service_completed_successfully
+      user-service-test:
+        condition: service_started
+      relation-service-test:
+        condition: service_started
+      kafka1-test:
+        condition: service_healthy
+      kafka2-test:
+        condition: service_healthy
+      kafka3-test:
+        condition: service_healthy
+    volumes:
+      - ../pinstack-notification-service/config:/app/config
+    environment:
+      - ENV=test
+    networks:
+      - pinstack-test
+    ports:
+      - "42055:50055"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+# Временные тома или отсутствие томов для тестовой среды
+networks:
+  pinstack-test:
+    driver: bridge
