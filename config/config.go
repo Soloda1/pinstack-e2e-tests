@@ -102,13 +102,13 @@ func MustLoad() *Config {
 	accessExpiresAt, err := time.ParseDuration(viper.GetString("jwt.access_expires_at"))
 	if err != nil {
 		log.Printf("Error reading jwt.access_expires_at: %s", err)
-		accessExpiresAt = 60 * time.Minute
+		accessExpiresAt = 1 * time.Minute
 	}
 
 	refreshExpiresAt, err := time.ParseDuration(viper.GetString("jwt.refresh_expires_at"))
 	if err != nil {
 		log.Printf("Error reading  jwt.refresh_expires_at: %s", err)
-		refreshExpiresAt = 6000 * time.Minute
+		refreshExpiresAt = 5 * time.Minute
 	}
 
 	config := &Config{

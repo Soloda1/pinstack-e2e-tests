@@ -355,7 +355,7 @@ const (
 	DefaultUserID = 1
 )
 
-func CreateUserJourney() (*RegisterRequest, *User, []*Post, []*Notification, []*User) {
+func CreateUserJourney() *UserJourney {
 	registerData := GenerateRegisterRequest()
 
 	user := &User{
@@ -383,5 +383,12 @@ func CreateUserJourney() (*RegisterRequest, *User, []*Post, []*Notification, []*
 
 	otherUsers := GenerateTestUsers(DefaultOtherUsersCount)
 
-	return registerData, user, posts, notifications, otherUsers
+	return &UserJourney{
+		RegisterRequest: registerData,
+		User:            user,
+		Posts:           posts,
+		Notifications:   notifications,
+		OtherUsers:      otherUsers,
+	}
+
 }
