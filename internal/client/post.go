@@ -1,11 +1,12 @@
 package client
 
 import (
-	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 	"log/slog"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 )
 
 type PostClient struct {
@@ -36,74 +37,74 @@ func (pc *PostClient) CreatePost(req fixtures.CreatePostRequest) (*fixtures.Crea
 	}
 
 	pc.client.log.Info("Post created successfully",
-		slog.Int("post_id", response.ID),
+		slog.Int64("post_id", response.ID),
 		slog.String("title", response.Title),
 	)
 	return &response, nil
 }
 
-func (pc *PostClient) GetPostByID(postID int) (*fixtures.Post, error) {
-	pc.client.log.Debug("Getting post by ID", slog.Int("post_id", postID))
+func (pc *PostClient) GetPostByID(postID int64) (*fixtures.Post, error) {
+	pc.client.log.Debug("Getting post by ID", slog.Int64("post_id", postID))
 
 	var response fixtures.Post
-	err := pc.client.Get("/v1/posts/"+strconv.Itoa(postID), nil, &response)
+	err := pc.client.Get("/v1/posts/"+strconv.FormatInt(postID, 10), nil, &response)
 	if err != nil {
 		pc.client.log.Error("Failed to get post by ID",
-			slog.Int("post_id", postID),
+			slog.Int64("post_id", postID),
 			slog.String("error", err.Error()),
 		)
 		return nil, err
 	}
 
 	pc.client.log.Debug("Got post by ID successfully",
-		slog.Int("post_id", postID),
+		slog.Int64("post_id", postID),
 		slog.String("title", response.Title),
 	)
 	return &response, nil
 }
 
-func (pc *PostClient) UpdatePost(postID int, req fixtures.UpdatePostRequest) (*fixtures.UpdatePostResponse, error) {
+func (pc *PostClient) UpdatePost(postID int64, req fixtures.UpdatePostRequest) (*fixtures.UpdatePostResponse, error) {
 	pc.client.log.Info("Updating post",
-		slog.Int("post_id", postID),
+		slog.Int64("post_id", postID),
 		slog.String("title", req.Title),
 	)
 
 	var response fixtures.UpdatePostResponse
-	err := pc.client.Put("/v1/posts/"+strconv.Itoa(postID), req, &response)
+	err := pc.client.Put("/v1/posts/"+strconv.FormatInt(postID, 10), req, &response)
 	if err != nil {
 		pc.client.log.Error("Failed to update post",
-			slog.Int("post_id", postID),
+			slog.Int64("post_id", postID),
 			slog.String("error", err.Error()),
 		)
 		return nil, err
 	}
 
 	pc.client.log.Info("Post updated successfully",
-		slog.Int("post_id", postID),
+		slog.Int64("post_id", postID),
 		slog.String("title", response.Title),
 	)
 	return &response, nil
 }
 
-func (pc *PostClient) DeletePost(postID int) error {
-	pc.client.log.Info("Deleting post", slog.Int("post_id", postID))
+func (pc *PostClient) DeletePost(postID int64) error {
+	pc.client.log.Info("Deleting post", slog.Int64("post_id", postID))
 
-	err := pc.client.Delete("/v1/posts/"+strconv.Itoa(postID), nil)
+	err := pc.client.Delete("/v1/posts/"+strconv.FormatInt(postID, 10), nil)
 	if err != nil {
 		pc.client.log.Error("Failed to delete post",
-			slog.Int("post_id", postID),
+			slog.Int64("post_id", postID),
 			slog.String("error", err.Error()),
 		)
 		return err
 	}
 
-	pc.client.log.Info("Post deleted successfully", slog.Int("post_id", postID))
+	pc.client.log.Info("Post deleted successfully", slog.Int64("post_id", postID))
 	return nil
 }
 
-func (pc *PostClient) ListPosts(authorID int, createdAfter, createdBefore time.Time, offset, limit int) (*fixtures.ListPostsResponse, error) {
+func (pc *PostClient) ListPosts(authorID int64, createdAfter, createdBefore time.Time, offset, limit int) (*fixtures.ListPostsResponse, error) {
 	pc.client.log.Debug("Listing posts",
-		slog.Int("author_id", authorID),
+		slog.Int64("author_id", authorID),
 		slog.Int("offset", offset),
 		slog.Int("limit", limit),
 	)
@@ -111,7 +112,7 @@ func (pc *PostClient) ListPosts(authorID int, createdAfter, createdBefore time.T
 	queryParams := url.Values{}
 
 	if authorID > 0 {
-		queryParams.Set("author_id", strconv.Itoa(authorID))
+		queryParams.Set("author_id", strconv.FormatInt(authorID, 10))
 	}
 
 	if !createdAfter.IsZero() {
@@ -136,7 +137,7 @@ func (pc *PostClient) ListPosts(authorID int, createdAfter, createdBefore time.T
 	err := pc.client.Get("/v1/posts/list", queryParams, &response)
 	if err != nil {
 		pc.client.log.Error("Failed to list posts",
-			slog.Int("author_id", authorID),
+			slog.Int64("author_id", authorID),
 			slog.String("error", err.Error()),
 		)
 		return nil, err

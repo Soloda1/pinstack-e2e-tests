@@ -1,8 +1,9 @@
 package client
 
 import (
-	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 	"log/slog"
+
+	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 )
 
 type RelationClient struct {
@@ -15,8 +16,8 @@ func NewRelationClient(client *Client) *RelationClient {
 	}
 }
 
-func (rc *RelationClient) Follow(followeeID int) (*fixtures.FollowResponse, error) {
-	rc.client.log.Info("Following user", slog.Int("followee_id", followeeID))
+func (rc *RelationClient) Follow(followeeID int64) (*fixtures.FollowResponse, error) {
+	rc.client.log.Info("Following user", slog.Int64("followee_id", followeeID))
 
 	req := fixtures.FollowRequest{
 		FolloweeID: followeeID,
@@ -26,21 +27,21 @@ func (rc *RelationClient) Follow(followeeID int) (*fixtures.FollowResponse, erro
 	err := rc.client.Post("/v1/relation/follow", req, &response)
 	if err != nil {
 		rc.client.log.Error("Failed to follow user",
-			slog.Int("followee_id", followeeID),
+			slog.Int64("followee_id", followeeID),
 			slog.String("error", err.Error()),
 		)
 		return nil, err
 	}
 
 	rc.client.log.Info("User followed successfully",
-		slog.Int("followee_id", followeeID),
+		slog.Int64("followee_id", followeeID),
 		slog.String("message", response.Message),
 	)
 	return &response, nil
 }
 
-func (rc *RelationClient) Unfollow(followeeID int) (*fixtures.UnfollowResponse, error) {
-	rc.client.log.Info("Unfollowing user", slog.Int("followee_id", followeeID))
+func (rc *RelationClient) Unfollow(followeeID int64) (*fixtures.UnfollowResponse, error) {
+	rc.client.log.Info("Unfollowing user", slog.Int64("followee_id", followeeID))
 
 	req := fixtures.UnfollowRequest{
 		FolloweeID: followeeID,
@@ -50,14 +51,14 @@ func (rc *RelationClient) Unfollow(followeeID int) (*fixtures.UnfollowResponse, 
 	err := rc.client.Post("/v1/relation/unfollow", req, &response)
 	if err != nil {
 		rc.client.log.Error("Failed to unfollow user",
-			slog.Int("followee_id", followeeID),
+			slog.Int64("followee_id", followeeID),
 			slog.String("error", err.Error()),
 		)
 		return nil, err
 	}
 
 	rc.client.log.Info("User unfollowed successfully",
-		slog.Int("followee_id", followeeID),
+		slog.Int64("followee_id", followeeID),
 		slog.String("message", response.Message),
 	)
 	return &response, nil
