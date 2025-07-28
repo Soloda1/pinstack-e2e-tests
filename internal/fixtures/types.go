@@ -237,6 +237,11 @@ type GetUserNotificationFeedResponse struct {
 
 // ========= Others  =========
 
+type BaseResponse struct {
+	Status int         `json:"status"`
+	Data   interface{} `json:"data"`
+}
+
 type ErrorBody struct {
 	Status  int    `json:"status,omitempty"`
 	Message string `json:"message,omitempty"`
