@@ -2,7 +2,10 @@ module github.com/Soloda1/pinstack-e2e-tests
 
 go 1.24.2
 
-require github.com/spf13/viper v1.20.1
+require (
+	github.com/brianvoe/gofakeit/v6 v6.28.0
+	github.com/spf13/viper v1.20.1
+)
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect

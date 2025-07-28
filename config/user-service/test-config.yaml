@@ -1,0 +1,17 @@
+env: "test"
+
+grpc_server:
+  address: "0.0.0.0"
+  port: 50051
+
+database:
+  username: "postgres"
+  password: "admin"
+  host: "user-db-test"
+  port: "5432"
+  db_name: "userservice_test"
+  migrations_path: "./migrations"
+
+prometheus:
+  address: "0.0.0.0"
+  port: 9101

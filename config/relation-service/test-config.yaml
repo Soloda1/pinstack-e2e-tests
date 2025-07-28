@@ -1,0 +1,43 @@
+env: "test"
+
+grpc_server:
+  address: "0.0.0.0"
+  port: 50054
+
+database:
+  username: "postgres"
+  password: "admin"
+  host: "relation-db-test"
+  port: "5432"
+  db_name: "relationservice_test"
+  migrations_path: "./migrations"
+
+kafka:
+  brokers: "kafka1-test:9092,kafka2-test:9092,kafka3-test:9092"
+  acks: "all"
+  retries: 3
+  retry_backoff_ms: 500
+  delivery_timeout_ms: 5000
+  queue_buffering_max_messages: 100000
+  queue_buffering_max_ms: 5
+  compression_type: "snappy"
+  batch_size: 16384
+  linger_ms: 5
+  topic: "relation-events"
+
+event_types:
+  follow_created: "follow_created"
+  follow_deleted: "follow_deleted"
+
+user_service:
+  address: "user-service-test"
+  port: 50051
+
+outbox:
+  concurrency: 4
+  tick_interval_ms: 20000
+  batch_size: 100
+
+prometheus:
+  address: "0.0.0.0"
+  port: 9104

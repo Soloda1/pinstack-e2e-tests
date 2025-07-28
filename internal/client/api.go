@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Soloda1/pinstack-e2e-tests/config"
 	"github.com/Soloda1/pinstack-e2e-tests/internal/custom_errors"
+	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 	"github.com/Soloda1/pinstack-e2e-tests/internal/logger"
 	"io"
 	"log/slog"
@@ -71,7 +72,12 @@ func (c *Client) makeRequest(method, path string, queryParams url.Values, body i
 		c.log.Error("Failed to execute request", slog.String("path", path), slog.String("error", err.Error()))
 		return custom_errors.ErrRequestFailed
 	}
-	defer resp.Body.Close()
+	defer func(body io.ReadCloser) {
+		err := body.Close()
+		if err != nil {
+			c.log.Error("Failed to close response Body", slog.String("path", path), slog.String("error", err.Error()))
+		}
+	}(resp.Body)
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -80,7 +86,7 @@ func (c *Client) makeRequest(method, path string, queryParams url.Values, body i
 	}
 
 	if resp.StatusCode >= 400 {
-		var errorResp ErrorBody
+		var errorResp fixtures.ErrorBody
 		if err := json.Unmarshal(respBody, &errorResp); err != nil {
 			c.log.Debug("API error failed to unmarshal", slog.String("status code", resp.Status), slog.String("body", string(respBody)))
 			return custom_errors.ErrJSONUnmarshalFailed

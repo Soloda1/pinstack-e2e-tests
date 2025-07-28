@@ -1,3 +1,0 @@
-package scenarios
-
-// Нагрузочные тесты

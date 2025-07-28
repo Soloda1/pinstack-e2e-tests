@@ -1,0 +1,41 @@
+env: "test"
+
+grpc_server:
+  address: "0.0.0.0"
+  port: 50055
+
+
+kafka:
+  brokers: "kafka1-test:9092,kafka2-test:9092,kafka3-test:9092"
+  acks: "all"
+  retries: 3
+  retry_backoff_ms: 500
+  delivery_timeout_ms: 5000
+  queue_buffering_max_messages: 100000
+  queue_buffering_max_ms: 5
+  compression_type: "snappy"
+  batch_size: 16384
+  linger_ms: 5
+  relation_topic: "relation-events"
+  consumer_group_id: "notification-service-test"
+  auto_offset_reset: "earliest"
+  enable_auto_commit: true
+  auto_commit_interval_ms: 5000
+  session_timeout_ms: 10000
+  max_poll_interval_ms: 300000
+
+event_types:
+  follow_created: "follow_created"
+  follow_deleted: "follow_deleted"
+
+database:
+  username: "postgres"
+  password: "admin"
+  host: "notification-db-test"
+  port: "5432"
+  db_name: "notificationservice_test"
+  migrations_path: "./migrations"
+
+prometheus:
+  address: "0.0.0.0"
+  port: 9105

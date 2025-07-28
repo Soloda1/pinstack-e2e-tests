@@ -1,4 +1,4 @@
-package client
+package fixtures
 
 import "time"
 
@@ -235,7 +235,17 @@ type GetUserNotificationFeedResponse struct {
 	TotalPages    int            `json:"total_pages"`
 }
 
+// ========= Others  =========
+
 type ErrorBody struct {
 	Status  int    `json:"status,omitempty"`
 	Message string `json:"message,omitempty"`
+}
+
+type UserJourney struct {
+	RegisterRequest *RegisterRequest
+	User            *User
+	Posts           []*Post
+	Notifications   []*Notification
+	OtherUsers      []*User
 }

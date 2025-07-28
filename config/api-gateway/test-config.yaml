@@ -1,0 +1,33 @@
+env: "test"
+
+http_server:
+  address: "0.0.0.0"
+  port: 8080
+  timeout: 60
+  idle_timeout: 120
+
+services:
+  user:
+    address: "user-service-test"
+    port: 50051
+  auth:
+    address: "auth-service-test"
+    port: 50052
+  post:
+    address: "post-service-test"
+    port: 50053
+  relation:
+    address: "relation-service-test"
+    port: 50054
+  notification:
+    address: "notification-service-test"
+    port: 50055
+
+jwt:
+  secret: "my-secret"
+  access_expires_at: "1m"
+  refresh_expires_at: "10m"
+
+prometheus:
+  address: "0.0.0.0"
+  port: 9106
