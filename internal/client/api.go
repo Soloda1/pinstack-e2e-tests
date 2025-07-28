@@ -72,8 +72,8 @@ func (c *Client) makeRequest(method, path string, queryParams url.Values, body i
 		c.log.Error("Failed to execute request", slog.String("path", path), slog.String("error", err.Error()))
 		return custom_errors.ErrRequestFailed
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
+	defer func(body io.ReadCloser) {
+		err := body.Close()
 		if err != nil {
 			c.log.Error("Failed to close response Body", slog.String("path", path), slog.String("error", err.Error()))
 		}
