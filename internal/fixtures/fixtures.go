@@ -2,13 +2,55 @@ package fixtures
 
 import (
 	"math/rand"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 )
 
+const (
+	// General constants
+	MaxTestID = 10000
+
+	// Password constants
+	MinPasswordLength        = 6
+	DefaultNewPasswordLength = 10
+	UpdatedPasswordLength    = 12
+
+	// Image dimensions
+	AvatarSize      = 300
+	PostImageWidth  = 800
+	PostImageHeight = 600
+
+	// Collection sizes
+	MaxMediaItems    = 5
+	MaxTagItems      = 4
+	MinTagItems      = 1
+	MaxMediaPosition = 9
+
+	// Time constants
+	MaxDaysAgo            = 30
+	MaxHoursAfterCreation = 48
+
+	// String lengths
+	BioSentences   = 10
+	TitleSentences = 5
+
+	// Test data limits
+	DefaultUserJourneyPostCount         = 3
+	DefaultUserJourneyNotificationCount = 5
+	DefaultOtherUsersCount              = 5
+)
+
 func init() {
-	gofakeit.Seed(0)
+	seed := time.Now().UnixNano()
+	if envSeed, ok := os.LookupEnv("TEST_SEED"); ok {
+		if parsedSeed, err := strconv.ParseInt(envSeed, 10, 64); err == nil {
+			seed = parsedSeed
+		}
+	}
+	gofakeit.Seed(seed)
 }
 
 // ========= Auth Data Generators =========
@@ -17,10 +59,10 @@ func GenerateRegisterRequest() *RegisterRequest {
 	return &RegisterRequest{
 		Username:  gofakeit.Username(),
 		Email:     gofakeit.Email(),
-		Password:  gofakeit.Password(true, true, true, true, false, 10),
+		Password:  gofakeit.Password(true, true, true, true, false, DefaultNewPasswordLength),
 		FullName:  gofakeit.Name(),
-		Bio:       gofakeit.HipsterSentence(10),
-		AvatarURL: gofakeit.ImageURL(300, 300),
+		Bio:       gofakeit.HipsterSentence(BioSentences),
+		AvatarURL: gofakeit.ImageURL(AvatarSize, AvatarSize),
 	}
 }
 
@@ -30,7 +72,7 @@ func GenerateLoginRequest(username, password string) *LoginRequest {
 	}
 
 	if password == "" {
-		password = gofakeit.Password(true, true, true, true, false, 10)
+		password = gofakeit.Password(true, true, true, true, false, DefaultNewPasswordLength)
 	}
 
 	return &LoginRequest{
@@ -61,8 +103,8 @@ func GenerateLogoutRequest(token string) *LogoutRequest {
 
 func GenerateUpdatePasswordRequest() *UpdatePasswordRequest {
 	return &UpdatePasswordRequest{
-		OldPassword: gofakeit.Password(true, true, true, true, false, 10),
-		NewPassword: gofakeit.Password(true, true, true, true, false, 12),
+		OldPassword: gofakeit.Password(true, true, true, true, false, DefaultNewPasswordLength),
+		NewPassword: gofakeit.Password(true, true, true, true, false, UpdatedPasswordLength),
 	}
 }
 
@@ -70,13 +112,13 @@ func GenerateUpdatePasswordRequest() *UpdatePasswordRequest {
 
 func GenerateUser() *User {
 	return &User{
-		ID:        rand.Intn(10000) + 1,
+		ID:        rand.Intn(MaxTestID) + 1,
 		Username:  gofakeit.Username(),
 		Email:     gofakeit.Email(),
 		FullName:  gofakeit.Name(),
-		Bio:       gofakeit.HipsterSentence(10),
-		AvatarURL: gofakeit.ImageURL(300, 300),
-		CreatedAt: time.Now().Add(-time.Duration(rand.Intn(30)) * 24 * time.Hour),
+		Bio:       gofakeit.HipsterSentence(BioSentences),
+		AvatarURL: gofakeit.ImageURL(AvatarSize, AvatarSize),
+		CreatedAt: time.Now().Add(-time.Duration(rand.Intn(MaxDaysAgo)) * 24 * time.Hour),
 		UpdatedAt: time.Now(),
 	}
 }
@@ -85,10 +127,10 @@ func GenerateCreateUserRequest() *CreateUserRequest {
 	return &CreateUserRequest{
 		Username:  gofakeit.Username(),
 		Email:     gofakeit.Email(),
-		Password:  gofakeit.Password(true, true, true, true, false, 10),
+		Password:  gofakeit.Password(true, true, true, true, false, DefaultNewPasswordLength),
 		FullName:  gofakeit.Name(),
-		Bio:       gofakeit.HipsterSentence(10),
-		AvatarURL: gofakeit.ImageURL(300, 300),
+		Bio:       gofakeit.HipsterSentence(BioSentences),
+		AvatarURL: gofakeit.ImageURL(AvatarSize, AvatarSize),
 	}
 }
 
@@ -98,94 +140,106 @@ func GenerateUpdateUserRequest(id int) *UpdateUserRequest {
 		Username: gofakeit.Username(),
 		Email:    gofakeit.Email(),
 		FullName: gofakeit.Name(),
-		Bio:      gofakeit.HipsterSentence(10),
+		Bio:      gofakeit.HipsterSentence(BioSentences),
 	}
 }
 
 func GenerateUpdateAvatarRequest() *UpdateAvatarRequest {
 	return &UpdateAvatarRequest{
-		AvatarURL: gofakeit.ImageURL(300, 300),
+		AvatarURL: gofakeit.ImageURL(AvatarSize, AvatarSize),
 	}
 }
 
 // ========= Post Data Generators =========
 
-func GenerateMediaItemInput() MediaItemInput {
-	mediaTypes := []string{"image", "video"}
+const (
+	// Media types
+	MediaTypeImage = "image"
+	MediaTypeVideo = "video"
+)
 
+var MediaTypes = []string{MediaTypeImage, MediaTypeVideo}
+
+func GenerateMediaItemInput() MediaItemInput {
 	return MediaItemInput{
-		Type:     mediaTypes[rand.Intn(len(mediaTypes))],
-		URL:      gofakeit.ImageURL(800, 600),
-		Position: rand.Intn(9),
+		Type:     MediaTypes[rand.Intn(len(MediaTypes))],
+		URL:      gofakeit.ImageURL(PostImageWidth, PostImageHeight),
+		Position: rand.Intn(MaxMediaPosition),
 	}
 }
 
 func GeneratePostMedia(id int) PostMedia {
-	mediaTypes := []string{"image", "video"}
-
 	return PostMedia{
 		ID:       id,
-		Type:     mediaTypes[rand.Intn(len(mediaTypes))],
-		URL:      gofakeit.ImageURL(800, 600),
-		Position: rand.Intn(9),
+		Type:     MediaTypes[rand.Intn(len(MediaTypes))],
+		URL:      gofakeit.ImageURL(PostImageWidth, PostImageHeight),
+		Position: rand.Intn(MaxMediaPosition),
 	}
 }
 
 func GenerateTag() Tag {
 	return Tag{
-		ID:   rand.Intn(100) + 1,
+		ID:   rand.Intn(MaxTestID) + 1,
 		Name: gofakeit.Word(),
 	}
 }
 
 func GeneratePostAuthor() PostAuthor {
 	return PostAuthor{
-		ID:        rand.Intn(10000) + 1,
+		ID:        rand.Intn(MaxTestID) + 1,
 		Username:  gofakeit.Username(),
 		FullName:  gofakeit.Name(),
-		AvatarURL: gofakeit.ImageURL(300, 300),
+		AvatarURL: gofakeit.ImageURL(AvatarSize, AvatarSize),
 	}
 }
 
+const (
+	// Paragraph generation constants
+	ParagraphMinSentences        = 3
+	ParagraphMaxSentences        = 5
+	ParagraphMaxWordsPerSentence = 10
+	ParagraphBreak               = "\n"
+)
+
 func GeneratePost() *Post {
 	var medialist []PostMedia
-	for i := 0; i < rand.Intn(5); i++ {
+	for i := 0; i < rand.Intn(MaxMediaItems); i++ {
 		medialist = append(medialist, GeneratePostMedia(i+1))
 	}
 
 	var tags []Tag
-	for i := 0; i < rand.Intn(4)+1; i++ {
+	for i := 0; i < rand.Intn(MaxTagItems)+MinTagItems; i++ {
 		tags = append(tags, GenerateTag())
 	}
 
-	createdAt := time.Now().Add(-time.Duration(rand.Intn(30)) * 24 * time.Hour)
+	createdAt := time.Now().Add(-time.Duration(rand.Intn(MaxDaysAgo)) * 24 * time.Hour)
 
 	return &Post{
-		ID:        rand.Intn(10000) + 1,
-		Title:     gofakeit.Sentence(5),
-		Content:   gofakeit.Paragraph(3, 5, 10, "\n"),
+		ID:        rand.Intn(MaxTestID) + 1,
+		Title:     gofakeit.Sentence(TitleSentences),
+		Content:   gofakeit.Paragraph(ParagraphMinSentences, ParagraphMaxSentences, ParagraphMaxWordsPerSentence, ParagraphBreak),
 		Author:    GeneratePostAuthor(),
 		Media:     medialist,
 		Tags:      tags,
 		CreatedAt: createdAt,
-		UpdatedAt: createdAt.Add(time.Duration(rand.Intn(48)) * time.Hour),
+		UpdatedAt: createdAt.Add(time.Duration(rand.Intn(MaxHoursAfterCreation)) * time.Hour),
 	}
 }
 
 func GenerateCreatePostRequest() *CreatePostRequest {
 	var medialist []MediaItemInput
-	for i := 0; i < rand.Intn(5); i++ {
+	for i := 0; i < rand.Intn(MaxMediaItems); i++ {
 		medialist = append(medialist, GenerateMediaItemInput())
 	}
 
 	var tags []string
-	for i := 0; i < rand.Intn(4)+1; i++ {
+	for i := 0; i < rand.Intn(MaxTagItems)+MinTagItems; i++ {
 		tags = append(tags, gofakeit.Word())
 	}
 
 	return &CreatePostRequest{
-		Title:      gofakeit.Sentence(5),
-		Content:    gofakeit.Paragraph(3, 5, 10, "\n"),
+		Title:      gofakeit.Sentence(TitleSentences),
+		Content:    gofakeit.Paragraph(ParagraphMinSentences, ParagraphMaxSentences, ParagraphMaxWordsPerSentence, ParagraphBreak),
 		MediaItems: medialist,
 		Tags:       tags,
 	}
@@ -193,18 +247,18 @@ func GenerateCreatePostRequest() *CreatePostRequest {
 
 func GenerateUpdatePostRequest() *UpdatePostRequest {
 	var medialist []MediaItemInput
-	for i := 0; i < rand.Intn(5); i++ {
+	for i := 0; i < rand.Intn(MaxMediaItems); i++ {
 		medialist = append(medialist, GenerateMediaItemInput())
 	}
 
 	var tags []string
-	for i := 0; i < rand.Intn(4)+1; i++ {
+	for i := 0; i < rand.Intn(MaxTagItems)+MinTagItems; i++ {
 		tags = append(tags, gofakeit.Word())
 	}
 
 	return &UpdatePostRequest{
-		Title:      gofakeit.Sentence(5),
-		Content:    gofakeit.Paragraph(3, 5, 10, "\n"),
+		Title:      gofakeit.Sentence(TitleSentences),
+		Content:    gofakeit.Paragraph(ParagraphMinSentences, ParagraphMaxSentences, ParagraphMaxWordsPerSentence, ParagraphBreak),
 		MediaItems: medialist,
 		Tags:       tags,
 	}
@@ -214,38 +268,57 @@ func GenerateUpdatePostRequest() *UpdatePostRequest {
 
 func GenerateFollowRequest() *FollowRequest {
 	return &FollowRequest{
-		FolloweeID: rand.Intn(10000) + 1,
+		FolloweeID: rand.Intn(MaxTestID) + 1,
 	}
 }
 
 func GenerateUnfollowRequest() *UnfollowRequest {
 	return &UnfollowRequest{
-		FolloweeID: rand.Intn(10000) + 1,
+		FolloweeID: rand.Intn(MaxTestID) + 1,
 	}
 }
 
 // ========= Notification Data Generators =========
 
-func GenerateNotification() *Notification {
-	notificationTypes := []string{"follow", "like", "comment", "mention", "system"}
+const (
+	// Notification types
+	NotificationTypeFollow  = "follow"
+	NotificationTypeLike    = "like"
+	NotificationTypeComment = "comment"
+	NotificationTypeMention = "mention"
+	NotificationTypeSystem  = "system"
 
+	// Payload constants
+	PayloadDataKey = "data"
+
+	// Random constants
+	RandomBoolModulo = 2
+)
+
+var NotificationTypes = []string{
+	NotificationTypeFollow,
+	NotificationTypeLike,
+	NotificationTypeComment,
+	NotificationTypeMention,
+	NotificationTypeSystem,
+}
+
+func GenerateNotification() *Notification {
 	return &Notification{
-		ID:        rand.Intn(10000) + 1,
-		UserID:    rand.Intn(10000) + 1,
-		Type:      notificationTypes[rand.Intn(len(notificationTypes))],
-		Payload:   map[string]interface{}{"data": gofakeit.Sentence(5)},
-		IsRead:    rand.Intn(2) == 1,
-		CreatedAt: time.Now().Add(-time.Duration(rand.Intn(48)) * time.Hour),
+		ID:        rand.Intn(MaxTestID) + 1,
+		UserID:    rand.Intn(MaxTestID) + 1,
+		Type:      NotificationTypes[rand.Intn(len(NotificationTypes))],
+		Payload:   map[string]interface{}{PayloadDataKey: gofakeit.Sentence(TitleSentences)},
+		IsRead:    rand.Intn(RandomBoolModulo) == 1,
+		CreatedAt: time.Now().Add(-time.Duration(rand.Intn(MaxHoursAfterCreation)) * time.Hour),
 	}
 }
 
 func GenerateSendNotificationRequest() *SendNotificationRequest {
-	notificationTypes := []string{"follow", "like", "comment", "mention", "system"}
-
 	return &SendNotificationRequest{
-		UserID:  rand.Intn(10000) + 1,
-		Type:    notificationTypes[rand.Intn(len(notificationTypes))],
-		Payload: map[string]interface{}{"data": gofakeit.Sentence(5)},
+		UserID:  rand.Intn(MaxTestID) + 1,
+		Type:    NotificationTypes[rand.Intn(len(NotificationTypes))],
+		Payload: map[string]interface{}{PayloadDataKey: gofakeit.Sentence(TitleSentences)},
 	}
 }
 
@@ -277,11 +350,16 @@ func GenerateTestNotifications(userID int, count int) []*Notification {
 	return notifications
 }
 
+const (
+	// Default IDs
+	DefaultUserID = 1
+)
+
 func CreateUserJourney() (*RegisterRequest, *User, []*Post, []*Notification, []*User) {
 	registerData := GenerateRegisterRequest()
 
 	user := &User{
-		ID:        1,
+		ID:        DefaultUserID,
 		Username:  registerData.Username,
 		Email:     registerData.Email,
 		FullName:  registerData.FullName,
@@ -292,7 +370,7 @@ func CreateUserJourney() (*RegisterRequest, *User, []*Post, []*Notification, []*
 	}
 
 	var posts []*Post
-	for i := 0; i < 3; i++ {
+	for i := 0; i < DefaultUserJourneyPostCount; i++ {
 		post := GeneratePost()
 		post.Author.ID = user.ID
 		post.Author.Username = user.Username
@@ -301,9 +379,9 @@ func CreateUserJourney() (*RegisterRequest, *User, []*Post, []*Notification, []*
 		posts = append(posts, post)
 	}
 
-	notifications := GenerateTestNotifications(user.ID, 5)
+	notifications := GenerateTestNotifications(user.ID, DefaultUserJourneyNotificationCount)
 
-	otherUsers := GenerateTestUsers(5)
+	otherUsers := GenerateTestUsers(DefaultOtherUsersCount)
 
 	return registerData, user, posts, notifications, otherUsers
 }

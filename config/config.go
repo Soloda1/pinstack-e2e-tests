@@ -79,8 +79,8 @@ func MustLoad() *Config {
 	viper.SetDefault("services.notification_service.port", 42055)
 
 	viper.SetDefault("jwt.secret", "my-secret")
-	viper.SetDefault("jwt.access_expires_at", "60m")
-	viper.SetDefault("jwt.refresh_expires_at", "6000m")
+	viper.SetDefault("jwt.access_expires_at", "5m")
+	viper.SetDefault("jwt.refresh_expires_at", "30m")
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Printf("Error reading config file: %s", err)
