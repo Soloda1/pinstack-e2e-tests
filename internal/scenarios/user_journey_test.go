@@ -13,7 +13,6 @@ import (
 	"github.com/Soloda1/pinstack-e2e-tests/internal/logger"
 )
 
-// Global variables for test context
 var (
 	cfg            *config.Config
 	log            *logger.Logger
@@ -32,7 +31,6 @@ func setup(t *testing.T) (*fixtures.UserJourney, string, string, func()) {
 	// Create a new UserJourney for each test to isolate test data
 	journey := fixtures.CreateUserJourney()
 
-	// Register a new user for the test
 	log.Info("Setting up test", "test", t.Name(), "username", journey.RegisterRequest.Username)
 
 	resp, err := authClient.Register(*journey.RegisterRequest)
@@ -40,7 +38,6 @@ func setup(t *testing.T) (*fixtures.UserJourney, string, string, func()) {
 		t.Fatalf("Failed to register test user: %v", err)
 	}
 
-	// Set the token for the API client
 	apiClient.SetToken(resp.AccessToken)
 
 	// Return the journey, tokens, and a cleanup function
@@ -53,17 +50,13 @@ func setup(t *testing.T) (*fixtures.UserJourney, string, string, func()) {
 
 // TestMain runs before any test in the package and sets up the testing environment
 func TestMain(m *testing.M) {
-	// Parse command line flags
 	flag.Parse()
 
-	// Load configuration
 	cfg = config.MustLoad()
 
-	// Initialize logger
 	log = logger.New(cfg.Env)
 	log.Info("Starting user journey e2e tests", "env", cfg.Env)
 
-	// Initialize clients
 	apiClient = client.NewClient(cfg, log)
 	authClient = client.NewAuthClient(apiClient)
 	userClient = client.NewUserClient(apiClient)
@@ -86,11 +79,8 @@ func TestMain(m *testing.M) {
 
 // cleanup handles test data cleanup after all tests
 func cleanup() {
-	// Add cleanup logic here (e.g., delete test users, posts, etc.)
 	log.Info("Cleanup not implemented")
 }
-
-// Тестирование основного пользовательского пути
 
 // TestUserJourney tests the complete user journey from registration to usage
 func TestUserJourney(t *testing.T) {
@@ -103,11 +93,9 @@ func TestUserJourney(t *testing.T) {
 
 // TestUserRegistrationAndLogin tests the user registration and login process
 func testUserRegistrationAndLogin(t *testing.T) {
-	// Call setup to register a user and get journey data
 	journey, accessToken, refreshToken, teardown := setup(t)
 	defer teardown()
 
-	// Verify we have valid tokens after registration
 	if accessToken == "" {
 		t.Fatal("Expected a valid access token after registration")
 	}
@@ -142,11 +130,9 @@ func testUserRegistrationAndLogin(t *testing.T) {
 
 // testUserProfileManagement tests retrieving, updating, and managing user profile
 func testUserProfileManagement(t *testing.T) {
-	// Call setup to register a user and get journey data
 	journey, _, _, teardown := setup(t)
 	defer teardown()
 
-	// Get user profile by username
 	user, err := userClient.GetUserByUsername(journey.RegisterRequest.Username)
 	if err != nil {
 		t.Fatalf("Failed to get user by username: %v", err)
@@ -211,11 +197,9 @@ func testUserProfileManagement(t *testing.T) {
 
 // testPostCreation tests creating and retrieving posts
 func testPostCreation(t *testing.T) {
-	// Call setup to register a user and get journey data
 	_, _, _, teardown := setup(t)
 	defer teardown()
 
-	// Create a new post
 	postReq := fixtures.GenerateCreatePostRequest()
 
 	createdPost, err := postClient.CreatePost(*postReq)
@@ -283,18 +267,16 @@ func testPostCreation(t *testing.T) {
 
 // testFollowingUsers tests following and unfollowing users
 func testFollowingUsers(t *testing.T) {
-	// Call setup to register a main user
 	journey, accessToken, _, teardown := setup(t)
 	defer teardown()
 
-	// Сохраняем токен первого пользователя
 	firstUserToken := accessToken
 
 	// Register another test user to follow/unfollow
 	otherJourney, _, _, otherTeardown := setup(t)
 	defer otherTeardown()
 
-	// Возвращаем токен первого пользователя перед вызовом Follow
+	// Restore first user's token before calling Follow
 	apiClient.SetToken(firstUserToken)
 
 	// Get the ID of the user to follow
@@ -317,7 +299,7 @@ func testFollowingUsers(t *testing.T) {
 		"follower", journey.RegisterRequest.Username,
 		"followee", otherUser.Username)
 
-	// Проверяем, что токен первого пользователя всё ещё активен перед вызовом Unfollow
+	// Ensure first user's token is still active before calling Unfollow
 	apiClient.SetToken(firstUserToken)
 
 	// Unfollow the user
@@ -340,13 +322,11 @@ func testNotifications(t *testing.T) {
 	journey, _, _, teardown := setup(t)
 	defer teardown()
 
-	// Get the user ID
 	user, err := userClient.GetUserByUsername(journey.RegisterRequest.Username)
 	if err != nil {
 		t.Fatalf("Failed to get user: %v", err)
 	}
 
-	// Create a test notification
 	notifPayload := map[string]interface{}{
 		"message": "Test notification for e2e testing",
 	}
@@ -365,7 +345,7 @@ func testNotifications(t *testing.T) {
 
 	var notificationID int64
 
-	// Логируем ID уведомления и весь ответ API
+	// Log notification ID and API response
 	log.Info("Notification sent",
 		slog.String("message", sendResp.Message),
 		slog.Any("response", sendResp))
@@ -376,14 +356,14 @@ func testNotifications(t *testing.T) {
 		t.Fatalf("Failed to get notification feed: %v", err)
 	}
 
-	// Проверяем, что лента не пуста
+	// Verify that the feed is not empty
 	if len(feedResp.Notifications) == 0 {
 		t.Error("Expected at least one notification in feed after sending")
 	} else {
-		// Берем последнее уведомление для дальнейших проверок
+		// Get the latest notification for further checks
 		latestNotif := feedResp.Notifications[0]
 
-		// Устанавливаем ID для последующих операций
+		// Set the ID for subsequent operations
 		notificationID = latestNotif.ID
 
 		log.Info("Found notification in feed",
@@ -410,7 +390,6 @@ func testNotifications(t *testing.T) {
 		t.Error("Expected at least 1 unread notification")
 	}
 
-	// Стандартный путь - используем ReadNotification для конкретного ID
 	readResp, err := notifClient.ReadNotification(notificationID)
 	if err != nil {
 		t.Errorf("Failed to mark notification as read: %v. Make sure token is valid and user owns the notification.", err)
@@ -430,17 +409,16 @@ func testNotifications(t *testing.T) {
 		}
 	}
 
-	// Получаем итоговое количество непрочитанных уведомлений
+	// Get the final unread notification count
 	finalUnreadResp, err := notifClient.GetUnreadCount(user.ID)
 	if err != nil {
 		t.Errorf("Failed to get final unread count: %v", err)
 	} else if finalUnreadResp.Count >= unreadResp.Count {
-		// Мы ожидаем, что после отметки уведомлений как прочитанных, количество непрочитанных уменьшится
+		// We expect the unread count to decrease after marking notifications as read
 		t.Errorf("Unexpected unread count after marking notifications as read. Expected < %d, got %d",
 			unreadResp.Count, finalUnreadResp.Count)
 	}
 
-	// Завершаем тест
 	log.Info("Completed notifications test",
 		"user_id", user.ID,
 		"notification_id", notificationID,
