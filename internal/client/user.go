@@ -1,10 +1,11 @@
 package client
 
 import (
-	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 	"log/slog"
 	"net/url"
 	"strconv"
+
+	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
 )
 
 type UserClient struct {
@@ -27,21 +28,21 @@ func (uc *UserClient) CreateUser(req fixtures.CreateUserRequest) (*fixtures.Crea
 		return nil, err
 	}
 
-	uc.client.log.Info("User created successfully", slog.Int("user_id", response.ID), slog.String("username", response.Username))
+	uc.client.log.Info("User created successfully", slog.Int64("user_id", response.ID), slog.String("username", response.Username))
 	return &response, nil
 }
 
-func (uc *UserClient) GetUserByID(userID int) (*fixtures.User, error) {
-	uc.client.log.Debug("Getting user by ID", slog.Int("user_id", userID))
+func (uc *UserClient) GetUserByID(userID int64) (*fixtures.User, error) {
+	uc.client.log.Debug("Getting user by ID", slog.Int64("user_id", userID))
 
 	var response fixtures.User
-	err := uc.client.Get("/v1/users/"+strconv.Itoa(userID), nil, &response)
+	err := uc.client.Get("/v1/users/"+strconv.FormatInt(userID, 10), nil, &response)
 	if err != nil {
-		uc.client.log.Error("Failed to get user by ID", slog.Int("user_id", userID), slog.String("error", err.Error()))
+		uc.client.log.Error("Failed to get user by ID", slog.Int64("user_id", userID), slog.String("error", err.Error()))
 		return nil, err
 	}
 
-	uc.client.log.Debug("Got user by ID successfully", slog.Int("user_id", userID), slog.String("username", response.Username))
+	uc.client.log.Debug("Got user by ID successfully", slog.Int64("user_id", userID), slog.String("username", response.Username))
 	return &response, nil
 }
 
@@ -55,7 +56,7 @@ func (uc *UserClient) GetUserByUsername(username string) (*fixtures.User, error)
 		return nil, err
 	}
 
-	uc.client.log.Debug("Got user by username successfully", slog.String("username", username), slog.Int("user_id", response.ID))
+	uc.client.log.Debug("Got user by username successfully", slog.String("username", username), slog.Int64("user_id", response.ID))
 	return &response, nil
 }
 
@@ -69,47 +70,47 @@ func (uc *UserClient) GetUserByEmail(email string) (*fixtures.User, error) {
 		return nil, err
 	}
 
-	uc.client.log.Debug("Got user by email successfully", slog.String("email", email), slog.Int("user_id", response.ID))
+	uc.client.log.Debug("Got user by email successfully", slog.String("email", email), slog.Int64("user_id", response.ID))
 	return &response, nil
 }
 
 func (uc *UserClient) UpdateUser(req fixtures.UpdateUserRequest) (*fixtures.UpdateUserResponse, error) {
-	uc.client.log.Info("Updating user", slog.Int("user_id", req.ID))
+	uc.client.log.Info("Updating user", slog.Int64("user_id", req.ID))
 
 	var response fixtures.UpdateUserResponse
-	err := uc.client.Put("/v1/users/"+strconv.Itoa(req.ID), req, &response)
+	err := uc.client.Put("/v1/users/"+strconv.FormatInt(req.ID, 10), req, &response)
 	if err != nil {
-		uc.client.log.Error("Failed to update user", slog.Int("user_id", req.ID), slog.String("error", err.Error()))
+		uc.client.log.Error("Failed to update user", slog.Int64("user_id", req.ID), slog.String("error", err.Error()))
 		return nil, err
 	}
 
-	uc.client.log.Info("User updated successfully", slog.Int("user_id", req.ID))
+	uc.client.log.Info("User updated successfully", slog.Int64("user_id", req.ID))
 	return &response, nil
 }
 
-func (uc *UserClient) UpdateAvatar(userID int, req fixtures.UpdateAvatarRequest) error {
-	uc.client.log.Info("Updating user avatar", slog.Int("user_id", userID))
+func (uc *UserClient) UpdateAvatar(userID int64, req fixtures.UpdateAvatarRequest) error {
+	uc.client.log.Info("Updating user avatar", slog.Int64("user_id", userID))
 
-	err := uc.client.Put("/v1/users/"+strconv.Itoa(userID)+"/avatar", req, nil)
+	err := uc.client.Put("/v1/users/"+strconv.FormatInt(userID, 10)+"/avatar", req, nil)
 	if err != nil {
-		uc.client.log.Error("Failed to update avatar", slog.Int("user_id", userID), slog.String("error", err.Error()))
+		uc.client.log.Error("Failed to update avatar", slog.Int64("user_id", userID), slog.String("error", err.Error()))
 		return err
 	}
 
-	uc.client.log.Info("User avatar updated successfully", slog.Int("user_id", userID))
+	uc.client.log.Info("User avatar updated successfully", slog.Int64("user_id", userID))
 	return nil
 }
 
-func (uc *UserClient) DeleteUser(userID int) error {
-	uc.client.log.Info("Deleting user", slog.Int("user_id", userID))
+func (uc *UserClient) DeleteUser(userID int64) error {
+	uc.client.log.Info("Deleting user", slog.Int64("user_id", userID))
 
-	err := uc.client.Delete("/v1/users/"+strconv.Itoa(userID), nil)
+	err := uc.client.Delete("/v1/users/"+strconv.FormatInt(userID, 10), nil)
 	if err != nil {
-		uc.client.log.Error("Failed to delete user", slog.Int("user_id", userID), slog.String("error", err.Error()))
+		uc.client.log.Error("Failed to delete user", slog.Int64("user_id", userID), slog.String("error", err.Error()))
 		return err
 	}
 
-	uc.client.log.Info("User deleted successfully", slog.Int("user_id", userID))
+	uc.client.log.Info("User deleted successfully", slog.Int64("user_id", userID))
 	return nil
 }
 

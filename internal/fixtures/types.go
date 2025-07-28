@@ -53,7 +53,7 @@ type UpdatePasswordResponse struct {
 // ========= User Types =========
 
 type User struct {
-	ID        int       `json:"id"`
+	ID        int64     `json:"id"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	FullName  string    `json:"full_name"`
@@ -75,7 +75,7 @@ type CreateUserRequest struct {
 type CreateUserResponse User
 
 type UpdateUserRequest struct {
-	ID       int    `json:"id"`
+	ID       int64  `json:"id"`
 	Username string `json:"username,omitempty"`
 	Email    string `json:"email,omitempty"`
 	FullName string `json:"full_name,omitempty"`
@@ -102,26 +102,26 @@ type MediaItemInput struct {
 }
 
 type PostMedia struct {
-	ID       int    `json:"id"`
+	ID       int64  `json:"id"`
 	Type     string `json:"type"`
 	URL      string `json:"url"`
 	Position int    `json:"position"`
 }
 
 type Tag struct {
-	ID   int    `json:"id"`
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 
 type PostAuthor struct {
-	ID        int    `json:"id"`
+	ID        int64  `json:"id"`
 	Username  string `json:"username"`
 	FullName  string `json:"full_name"`
 	AvatarURL string `json:"avatar_url"`
 }
 
 type Post struct {
-	ID        int         `json:"id"`
+	ID        int64       `json:"id"`
 	Title     string      `json:"title"`
 	Content   string      `json:"content"`
 	Author    PostAuthor  `json:"author"`
@@ -139,10 +139,10 @@ type CreatePostRequest struct {
 }
 
 type CreatePostResponse struct {
-	ID              int         `json:"id"`
+	ID              int64       `json:"id"`
 	Title           string      `json:"title"`
 	Content         string      `json:"content"`
-	AuthorID        int         `json:"author_id"`
+	AuthorID        int64       `json:"author_id"`
 	AuthorUsername  string      `json:"author_username"`
 	AuthorFullName  string      `json:"author_full_name"`
 	AuthorEmail     string      `json:"author_email"`
@@ -171,7 +171,7 @@ type ListPostsResponse struct {
 // ========= Relation Types =========
 
 type FollowRequest struct {
-	FolloweeID int `json:"followee_id"`
+	FolloweeID int64 `json:"followee_id"`
 }
 
 type FollowResponse struct {
@@ -179,7 +179,7 @@ type FollowResponse struct {
 }
 
 type UnfollowRequest struct {
-	FolloweeID int `json:"followee_id"`
+	FolloweeID int64 `json:"followee_id"`
 }
 
 type UnfollowResponse struct {
@@ -189,8 +189,8 @@ type UnfollowResponse struct {
 // ========= Notification Types =========
 
 type Notification struct {
-	ID        int         `json:"id"`
-	UserID    int         `json:"user_id"`
+	ID        int64       `json:"id"`
+	UserID    int64       `json:"user_id"`
 	Type      string      `json:"type"`
 	Payload   interface{} `json:"payload"`
 	IsRead    bool        `json:"is_read"`
@@ -198,13 +198,13 @@ type Notification struct {
 }
 
 type SendNotificationRequest struct {
-	UserID  int         `json:"user_id"`
+	UserID  int64       `json:"user_id"`
 	Type    string      `json:"type"`
 	Payload interface{} `json:"payload,omitempty"`
 }
 
 type SendNotificationResponse struct {
-	NotificationID int    `json:"notification_id"`
+	NotificationID int64  `json:"notification_id"`
 	Message        string `json:"message"`
 }
 
@@ -236,6 +236,11 @@ type GetUserNotificationFeedResponse struct {
 }
 
 // ========= Others  =========
+
+type BaseResponse struct {
+	Status int         `json:"status"`
+	Data   interface{} `json:"data"`
+}
 
 type ErrorBody struct {
 	Status  int    `json:"status,omitempty"`

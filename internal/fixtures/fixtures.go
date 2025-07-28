@@ -140,7 +140,7 @@ func GenerateUpdatePasswordRequest() *UpdatePasswordRequest {
 
 func GenerateUser() *User {
 	return &User{
-		ID:        safeRandIntn(MaxTestID) + 1,
+		ID:        int64(safeRandIntn(MaxTestID) + 1),
 		Username:  gofakeit.Username(),
 		Email:     gofakeit.Email(),
 		FullName:  gofakeit.Name(),
@@ -162,7 +162,7 @@ func GenerateCreateUserRequest() *CreateUserRequest {
 	}
 }
 
-func GenerateUpdateUserRequest(id int) *UpdateUserRequest {
+func GenerateUpdateUserRequest(id int64) *UpdateUserRequest {
 	return &UpdateUserRequest{
 		ID:       id,
 		Username: gofakeit.Username(),
@@ -196,7 +196,7 @@ func GenerateMediaItemInput() MediaItemInput {
 	}
 }
 
-func GeneratePostMedia(id int) PostMedia {
+func GeneratePostMedia(id int64) PostMedia {
 	return PostMedia{
 		ID:       id,
 		Type:     MediaTypes[safeRandIntn(len(MediaTypes))],
@@ -207,14 +207,14 @@ func GeneratePostMedia(id int) PostMedia {
 
 func GenerateTag() Tag {
 	return Tag{
-		ID:   safeRandIntn(MaxTestID) + 1,
+		ID:   int64(safeRandIntn(MaxTestID) + 1),
 		Name: gofakeit.Word(),
 	}
 }
 
 func GeneratePostAuthor() PostAuthor {
 	return PostAuthor{
-		ID:        safeRandIntn(MaxTestID) + 1,
+		ID:        int64(safeRandIntn(MaxTestID) + 1),
 		Username:  gofakeit.Username(),
 		FullName:  gofakeit.Name(),
 		AvatarURL: gofakeit.ImageURL(AvatarSize, AvatarSize),
@@ -232,7 +232,7 @@ const (
 func GeneratePost() *Post {
 	var medialist []PostMedia
 	for i := 0; i < safeRandIntn(MaxMediaItems); i++ {
-		medialist = append(medialist, GeneratePostMedia(i+1))
+		medialist = append(medialist, GeneratePostMedia(int64(i+1)))
 	}
 
 	var tags []Tag
@@ -243,7 +243,7 @@ func GeneratePost() *Post {
 	createdAt := time.Now().Add(-time.Duration(safeRandIntn(MaxDaysAgo)) * 24 * time.Hour)
 
 	return &Post{
-		ID:        safeRandIntn(MaxTestID) + 1,
+		ID:        int64(safeRandIntn(MaxTestID) + 1),
 		Title:     gofakeit.Sentence(TitleSentences),
 		Content:   gofakeit.Paragraph(ParagraphMinSentences, ParagraphMaxSentences, ParagraphMaxWordsPerSentence, ParagraphBreak),
 		Author:    GeneratePostAuthor(),
@@ -296,13 +296,13 @@ func GenerateUpdatePostRequest() *UpdatePostRequest {
 
 func GenerateFollowRequest() *FollowRequest {
 	return &FollowRequest{
-		FolloweeID: safeRandIntn(MaxTestID) + 1,
+		FolloweeID: int64(safeRandIntn(MaxTestID) + 1),
 	}
 }
 
 func GenerateUnfollowRequest() *UnfollowRequest {
 	return &UnfollowRequest{
-		FolloweeID: safeRandIntn(MaxTestID) + 1,
+		FolloweeID: int64(safeRandIntn(MaxTestID) + 1),
 	}
 }
 
@@ -333,8 +333,8 @@ var NotificationTypes = []string{
 
 func GenerateNotification() *Notification {
 	return &Notification{
-		ID:        safeRandIntn(MaxTestID) + 1,
-		UserID:    safeRandIntn(MaxTestID) + 1,
+		ID:        int64(safeRandIntn(MaxTestID) + 1),
+		UserID:    int64(safeRandIntn(MaxTestID) + 1),
 		Type:      NotificationTypes[safeRandIntn(len(NotificationTypes))],
 		Payload:   map[string]interface{}{PayloadDataKey: gofakeit.Sentence(TitleSentences)},
 		IsRead:    safeRandIntn(RandomBoolModulo) == 1,
@@ -344,7 +344,7 @@ func GenerateNotification() *Notification {
 
 func GenerateSendNotificationRequest() *SendNotificationRequest {
 	return &SendNotificationRequest{
-		UserID:  safeRandIntn(MaxTestID) + 1,
+		UserID:  int64(safeRandIntn(MaxTestID) + 1),
 		Type:    NotificationTypes[safeRandIntn(len(NotificationTypes))],
 		Payload: map[string]interface{}{PayloadDataKey: gofakeit.Sentence(TitleSentences)},
 	}
@@ -368,7 +368,7 @@ func GenerateTestPosts(count int) []*Post {
 	return posts
 }
 
-func GenerateTestNotifications(userID int, count int) []*Notification {
+func GenerateTestNotifications(userID int64, count int) []*Notification {
 	var notifications []*Notification
 	for i := 0; i < count; i++ {
 		notification := GenerateNotification()

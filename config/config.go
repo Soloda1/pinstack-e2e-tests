@@ -52,7 +52,7 @@ type JWT struct {
 func MustLoad() *Config {
 	viper.SetConfigName("test-config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./config")
+	viper.AddConfigPath("../../config")
 
 	viper.SetDefault("env", "test")
 

@@ -299,20 +299,20 @@ services:
         max-size: "200m"
         max-file: "10"
 
-  ##################
-  # NGINX
-  ##################
-  nginx-test:
-    image: nginx:alpine
-    container_name: pinstack-nginx-test
-    ports:
-      - "42800:80"
-    volumes:
-      - ./config/nginx.test.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - api-gateway-test
-    networks:
-      - pinstack-test
+#  ##################
+#  # NGINX
+#  ##################
+#  nginx-test:
+#    image: nginx:alpine
+#    container_name: pinstack-nginx-test
+#    ports:
+#      - "42800:80"
+#    volumes:
+#      - ./config/nginx.test.conf:/etc/nginx/nginx.conf:ro
+#    depends_on:
+#      - api-gateway-test
+#    networks:
+#      - pinstack-test
 
   ##################
   # Kafka (KRaft mode for notifications)
@@ -518,7 +518,7 @@ services:
         max-size: "200m"
         max-file: "10"
 
-# Временные тома или отсутствие томов для тестовой среды
 networks:
   pinstack-test:
+    external: true
     driver: bridge

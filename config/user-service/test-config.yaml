@@ -1,4 +1,4 @@
-env: "test"
+env: "dev"
 
 grpc_server:
   address: "0.0.0.0"

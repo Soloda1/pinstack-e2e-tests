@@ -95,10 +95,22 @@ func (c *Client) makeRequest(method, path string, queryParams url.Values, body i
 		return fmt.Errorf("%s", errorResp.Message)
 	}
 
-	if result != nil && len(respBody) > 0 {
-		if err := json.Unmarshal(respBody, result); err != nil {
-			c.log.Error("Failed to unmarshal response", slog.String("path", path), slog.String("error", err.Error()))
-			return custom_errors.ErrJSONUnmarshalFailed
+	if result != nil {
+		var baseResp fixtures.BaseResponse
+		if err := json.Unmarshal(respBody, &baseResp); err != nil {
+			if err := json.Unmarshal(respBody, result); err != nil {
+				return custom_errors.ErrJSONUnmarshalFailed
+			}
+		} else {
+			if baseResp.Data != nil {
+				dataJSON, err := json.Marshal(baseResp.Data)
+				if err != nil {
+					return custom_errors.ErrJSONUnmarshalFailed
+				}
+				if err := json.Unmarshal(dataJSON, result); err != nil {
+					return custom_errors.ErrJSONUnmarshalFailed
+				}
+			}
 		}
 	}
 
