@@ -57,6 +57,7 @@ func GetSafeRandom() *rand.Rand {
 	return globalRand
 }
 
+// random int in [0;n)
 func safeRandIntn(n int) int {
 	globalRandLock.Lock()
 	defer globalRandLock.Unlock()
@@ -192,7 +193,7 @@ func GenerateMediaItemInput() MediaItemInput {
 	return MediaItemInput{
 		Type:     MediaTypes[safeRandIntn(len(MediaTypes))],
 		URL:      gofakeit.ImageURL(PostImageWidth, PostImageHeight),
-		Position: safeRandIntn(MaxMediaPosition),
+		Position: safeRandIntn(MaxMediaPosition) + 1,
 	}
 }
 
@@ -201,14 +202,14 @@ func GeneratePostMedia(id int64) PostMedia {
 		ID:       id,
 		Type:     MediaTypes[safeRandIntn(len(MediaTypes))],
 		URL:      gofakeit.ImageURL(PostImageWidth, PostImageHeight),
-		Position: safeRandIntn(MaxMediaPosition),
+		Position: safeRandIntn(MaxMediaPosition) + 1,
 	}
 }
 
 func GenerateTag() Tag {
 	return Tag{
 		ID:   int64(safeRandIntn(MaxTestID) + 1),
-		Name: gofakeit.Word(),
+		Name: "test" + gofakeit.Word(),
 	}
 }
 

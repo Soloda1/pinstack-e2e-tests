@@ -460,7 +460,7 @@ services:
     command: >
       bash -c "
         echo 'Ожидаем готовности Kafka кластера...'
-        sleep 20
+        sleep 10
       
         BOOTSTRAP_SERVERS='kafka1-test:9092,kafka2-test:9092,kafka3-test:9092'
       
