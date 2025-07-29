@@ -254,12 +254,8 @@ services:
         condition: service_completed_successfully
       user-service-test:
         condition: service_started
-      kafka1-test:
-        condition: service_healthy
-      kafka2-test:
-        condition: service_healthy
-      kafka3-test:
-        condition: service_healthy
+      kafka-topics-init-test:
+        condition: service_completed_successfully
     volumes:
       - ./config/relation-service/test-config.yaml:/app/config/config.yaml
     environment:
@@ -299,20 +295,20 @@ services:
         max-size: "200m"
         max-file: "10"
 
-#  ##################
-#  # NGINX
-#  ##################
-#  nginx-test:
-#    image: nginx:alpine
-#    container_name: pinstack-nginx-test
-#    ports:
-#      - "42800:80"
-#    volumes:
-#      - ./config/nginx.test.conf:/etc/nginx/nginx.conf:ro
-#    depends_on:
-#      - api-gateway-test
-#    networks:
-#      - pinstack-test
+  #  ##################
+  #  # NGINX
+  #  ##################
+  #  nginx-test:
+  #    image: nginx:alpine
+  #    container_name: pinstack-nginx-test
+  #    ports:
+  #      - "42800:80"
+  #    volumes:
+  #      - ./config/nginx.test.conf:/etc/nginx/nginx.conf:ro
+  #    depends_on:
+  #      - api-gateway-test
+  #    networks:
+  #      - pinstack-test
 
   ##################
   # Kafka (KRaft mode for notifications)
@@ -446,6 +442,53 @@ services:
         tag: "kafka3-test-only-errors"
         env: "KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR"
 
+  ##################
+  # Kafka Topics Initialization
+  ##################
+  kafka-topics-init-test:
+    image: confluentinc/cp-kafka:latest
+    container_name: pinstack-kafka-topics-init-test
+    depends_on:
+      kafka1-test:
+        condition: service_healthy
+      kafka2-test:
+        condition: service_healthy
+      kafka3-test:
+        condition: service_healthy
+    networks:
+      - pinstack-test
+    command: >
+      bash -c "
+        echo 'Ожидаем готовности Kafka кластера...'
+        sleep 20
+      
+        BOOTSTRAP_SERVERS='kafka1-test:9092,kafka2-test:9092,kafka3-test:9092'
+      
+        echo '=== Создаем топики ==='
+      
+        echo 'Создаем топик relation-events...'
+        kafka-topics --bootstrap-server \$$BOOTSTRAP_SERVERS --create --topic relation-events --partitions 3 --replication-factor 3 --if-not-exists --config cleanup.policy=delete --config retention.ms=604800000
+      
+        # Если понадобятся еще топики, добавь их здесь:
+        # echo 'Создаем топик notification-events...'
+        # kafka-topics --bootstrap-server \$$BOOTSTRAP_SERVERS --create --topic notification-events --partitions 3 --replication-factor 3 --if-not-exists --config cleanup.policy=delete --config retention.ms=604800000
+      
+        echo '=== Проверяем результат ==='
+        echo 'Список всех топиков:'
+        kafka-topics --bootstrap-server \$$BOOTSTRAP_SERVERS --list
+      
+        echo 'Детали топика relation-events:'
+        kafka-topics --bootstrap-server \$$BOOTSTRAP_SERVERS --describe --topic relation-events
+      
+        echo 'Инициализация топиков завершена успешно!'
+      "
+    restart: "no"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
+
   ######################
   # Postgres (notification-service)
   ######################
@@ -498,12 +541,8 @@ services:
         condition: service_started
       relation-service-test:
         condition: service_started
-      kafka1-test:
-        condition: service_healthy
-      kafka2-test:
-        condition: service_healthy
-      kafka3-test:
-        condition: service_healthy
+      kafka-topics-init-test:
+        condition: service_completed_successfully
     volumes:
       - ./config/notification-service/test-config.yaml:/app/config/config.yaml
     environment:
