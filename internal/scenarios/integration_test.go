@@ -1,3 +1,0 @@
-package scenarios
-
-// Интеграционные тесты
