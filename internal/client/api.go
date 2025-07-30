@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Soloda1/pinstack-system-tests/config"
-	"github.com/Soloda1/pinstack-system-tests/internal/custom_errors"
-	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
-	"github.com/Soloda1/pinstack-system-tests/internal/logger"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
+
+	"github.com/Soloda1/pinstack-system-tests/config"
+	"github.com/Soloda1/pinstack-system-tests/internal/custom_errors"
+	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
+	"github.com/Soloda1/pinstack-system-tests/internal/logger"
 )
 
 type Client struct {
@@ -33,6 +34,10 @@ func NewClient(cfg *config.Config, log *logger.Logger) *Client {
 
 func (c *Client) SetToken(token string) {
 	c.Token = token
+}
+
+func (c *Client) GetToken() string {
+	return c.Token
 }
 
 func (c *Client) makeRequest(method, path string, queryParams url.Values, body interface{}, result interface{}) error {

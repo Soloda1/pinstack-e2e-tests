@@ -195,8 +195,9 @@ func cleanup() {
 	createdUsers = []UserCleanupInfo{}
 	createdPosts = []PostCleanupInfo{}
 	createdNotifications = []NotificationCleanupInfo{}
-} // TestUserJourney tests the complete user journey from registration to usage
+}
 
+// TestUserJourney tests the complete user journey from registration to usage
 func TestUserJourney(t *testing.T) {
 	t.Run("1. Registration and Login", testUserRegistrationAndLogin)
 	t.Run("2. Profile Management", testUserProfileManagement)
