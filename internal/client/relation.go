@@ -3,7 +3,7 @@ package client
 import (
 	"log/slog"
 
-	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
+	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
 )
 
 type RelationClient struct {

@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Soloda1/pinstack-e2e-tests/config"
-	"github.com/Soloda1/pinstack-e2e-tests/internal/client"
-	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
-	"github.com/Soloda1/pinstack-e2e-tests/internal/logger"
+	"github.com/Soloda1/pinstack-system-tests/config"
+	"github.com/Soloda1/pinstack-system-tests/internal/client"
+	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
+	"github.com/Soloda1/pinstack-system-tests/internal/logger"
 )
 
 var (

@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
+	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
 )
 
 type NotificationClient struct {
