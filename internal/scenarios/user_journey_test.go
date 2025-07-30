@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Soloda1/pinstack-e2e-tests/config"
-	"github.com/Soloda1/pinstack-e2e-tests/internal/client"
-	"github.com/Soloda1/pinstack-e2e-tests/internal/fixtures"
-	"github.com/Soloda1/pinstack-e2e-tests/internal/logger"
+	"github.com/Soloda1/pinstack-system-tests/config"
+	"github.com/Soloda1/pinstack-system-tests/internal/client"
+	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
+	"github.com/Soloda1/pinstack-system-tests/internal/logger"
 )
 
 var (
@@ -22,7 +22,31 @@ var (
 	postClient     *client.PostClient
 	relationClient *client.RelationClient
 	notifClient    *client.NotificationClient
+
+	// Resources to clean up after tests
+	createdUsers         []UserCleanupInfo
+	createdPosts         []PostCleanupInfo
+	createdNotifications []NotificationCleanupInfo
 )
+
+// UserCleanupInfo contains information needed to delete a user
+type UserCleanupInfo struct {
+	ID          int64
+	Username    string
+	AccessToken string
+}
+
+// PostCleanupInfo contains information needed to delete a post
+type PostCleanupInfo struct {
+	ID          int64
+	AccessToken string
+}
+
+// NotificationCleanupInfo contains information needed to delete a notification
+type NotificationCleanupInfo struct {
+	ID          int64
+	AccessToken string
+}
 
 // setup prepares the test environment for a single test by registering a new user
 func setup(t *testing.T) (*fixtures.UserJourney, string, string, func()) {
@@ -40,10 +64,25 @@ func setup(t *testing.T) (*fixtures.UserJourney, string, string, func()) {
 
 	apiClient.SetToken(resp.AccessToken)
 
+	// Get user info to track user ID for cleanup
+	user, err := userClient.GetUserByUsername(journey.RegisterRequest.Username)
+	if err != nil {
+		log.Warn("Failed to get user info for cleanup tracking", "username", journey.RegisterRequest.Username, "error", err.Error())
+	} else {
+		// Add user info to cleanup list
+		userInfo := UserCleanupInfo{
+			ID:          user.ID,
+			Username:    user.Username,
+			AccessToken: resp.AccessToken,
+		}
+		createdUsers = append(createdUsers, userInfo)
+		log.Debug("Added user to cleanup list", "user_id", user.ID, "username", user.Username)
+	}
+
 	// Return the journey, tokens, and a cleanup function
 	return journey, resp.AccessToken, resp.RefreshToken, func() {
 		log.Info("Test complete, local cleanup", "test", t.Name())
-		// Add test-specific cleanup code here if needed
+
 		apiClient.SetToken("")
 	}
 }
@@ -52,7 +91,7 @@ func setup(t *testing.T) (*fixtures.UserJourney, string, string, func()) {
 func TestMain(m *testing.M) {
 	flag.Parse()
 
-	cfg = config.MustLoad()
+	cfg = config.MustLoad("../../config")
 
 	log = logger.New(cfg.Env)
 	log.Info("Starting user journey e2e tests", "env", cfg.Env)
@@ -79,7 +118,83 @@ func TestMain(m *testing.M) {
 
 // cleanup handles test data cleanup after all tests
 func cleanup() {
-	log.Info("Cleanup not implemented")
+	log.Info("Starting cleanup process",
+		"users_to_delete", len(createdUsers),
+		"posts_to_delete", len(createdPosts),
+		"notifications_to_delete", len(createdNotifications))
+
+	var successfulNotificationDeletions, successfulPostDeletions, successfulUserDeletions int
+
+	// Clean up notifications first (they may depend on users)
+	for _, notificationInfo := range createdNotifications {
+		log.Debug("Attempting to delete notification", "notification_id", notificationInfo.ID)
+
+		// Set the token that created this notification
+		apiClient.SetToken(notificationInfo.AccessToken)
+
+		_, err := notifClient.RemoveNotification(notificationInfo.ID)
+		if err != nil {
+			log.Warn("Failed to delete notification during cleanup",
+				"notification_id", notificationInfo.ID,
+				"error", err.Error())
+		} else {
+			log.Debug("Successfully deleted notification", "notification_id", notificationInfo.ID)
+			successfulNotificationDeletions++
+		}
+	}
+
+	// Clean up posts (they may depend on users)
+	for _, postInfo := range createdPosts {
+		log.Debug("Attempting to delete post", "post_id", postInfo.ID)
+
+		// Set the token that created this post
+		apiClient.SetToken(postInfo.AccessToken)
+
+		err := postClient.DeletePost(postInfo.ID)
+		if err != nil {
+			log.Warn("Failed to delete post during cleanup",
+				"post_id", postInfo.ID,
+				"error", err.Error())
+		} else {
+			log.Debug("Successfully deleted post", "post_id", postInfo.ID)
+			successfulPostDeletions++
+		}
+	}
+
+	// Clean up users (use their stored tokens)
+	for _, userInfo := range createdUsers {
+		log.Debug("Attempting to delete user", "user_id", userInfo.ID, "username", userInfo.Username)
+
+		// Set the user's token before deleting
+		apiClient.SetToken(userInfo.AccessToken)
+
+		err := userClient.DeleteUser(userInfo.ID)
+		if err != nil {
+			log.Warn("Failed to delete user during cleanup",
+				"user_id", userInfo.ID,
+				"username", userInfo.Username,
+				"error", err.Error())
+		} else {
+			log.Debug("Successfully deleted user", "user_id", userInfo.ID, "username", userInfo.Username)
+			successfulUserDeletions++
+		}
+	}
+
+	// Clear token after cleanup
+	apiClient.SetToken("")
+
+	log.Info("Cleanup process completed",
+		"successful_notification_deletions", successfulNotificationDeletions,
+		"total_notifications", len(createdNotifications),
+		"successful_post_deletions", successfulPostDeletions,
+		"total_posts", len(createdPosts),
+		"successful_user_deletions", successfulUserDeletions,
+		"total_users", len(createdUsers))
+
+	// Reset cleanup lists for next test run
+	createdUsers = []UserCleanupInfo{}
+	createdPosts = []PostCleanupInfo{}
+	createdNotifications = []NotificationCleanupInfo{}
 }
 
 // TestUserJourney tests the complete user journey from registration to usage
@@ -206,6 +321,14 @@ func testPostCreation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create post: %v", err)
 	}
+
+	// Add post ID to cleanup list
+	postInfo := PostCleanupInfo{
+		ID:          createdPost.ID,
+		AccessToken: apiClient.GetToken(), // Get current token
+	}
+	createdPosts = append(createdPosts, postInfo)
+	log.Debug("Added post to cleanup list", "post_id", createdPost.ID)
 
 	// Verify the post was created with correct data
 	if createdPost.Title != postReq.Title {
@@ -365,6 +488,14 @@ func testNotifications(t *testing.T) {
 
 		// Set the ID for subsequent operations
 		notificationID = latestNotif.ID
+
+		// Add notification ID to cleanup list
+		notificationInfo := NotificationCleanupInfo{
+			ID:          notificationID,
+			AccessToken: apiClient.GetToken(), // Get current token
+		}
+		createdNotifications = append(createdNotifications, notificationInfo)
+		log.Debug("Added notification to cleanup list", "notification_id", notificationID)
 
 		log.Info("Found notification in feed",
 			slog.Int64("notification_id", latestNotif.ID),
