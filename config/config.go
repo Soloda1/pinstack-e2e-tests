@@ -49,10 +49,10 @@ type JWT struct {
 	RefreshExpiresAt time.Duration `mapstructure:"refresh_expires_at"`
 }
 
-func MustLoad() *Config {
+func MustLoad(configPath string) *Config {
 	viper.SetConfigName("test-config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("../../config")
+	viper.AddConfigPath(configPath)
 
 	viper.SetDefault("env", "test")
 
