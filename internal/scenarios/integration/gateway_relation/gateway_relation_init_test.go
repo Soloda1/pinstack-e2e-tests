@@ -20,8 +20,7 @@ var (
 func TestMain(m *testing.M) {
 	flag.Parse()
 
-	cfg = config.MustLoad()
-
+	cfg = config.MustLoad("../../../../config")
 	log = logger.New(cfg.Env)
 	log.Info("Starting auth gateway tests", "env", cfg.Env)
 
