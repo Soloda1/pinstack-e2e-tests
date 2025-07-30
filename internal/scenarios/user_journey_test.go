@@ -52,7 +52,7 @@ func setup(t *testing.T) (*fixtures.UserJourney, string, string, func()) {
 func TestMain(m *testing.M) {
 	flag.Parse()
 
-	cfg = config.MustLoad()
+	cfg = config.MustLoad("../../config")
 
 	log = logger.New(cfg.Env)
 	log.Info("Starting user journey e2e tests", "env", cfg.Env)
