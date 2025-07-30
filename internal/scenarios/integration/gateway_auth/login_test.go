@@ -96,7 +96,7 @@ func TestLoginValidationErrors(t *testing.T) {
 	})
 
 	t.Run("EmptyPassword", func(t *testing.T) {
-		invalidReq := fixtures.GenerateLoginRequest("usernameempypassword", "")
+		invalidReq := fixtures.GenerateLoginRequest("usernameemptypassword", "")
 		invalidReq.Password = ""
 
 		_, err := tc.AuthClient.Login(*invalidReq)

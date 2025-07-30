@@ -16,13 +16,13 @@ var (
 	notificationClient *client.NotificationClient
 )
 
-// TestMain запускается перед любым тестом в пакете и настраивает тестовое окружение
+// TestMain runs before any test in the package and sets up the test environment
 func TestMain(m *testing.M) {
 	flag.Parse()
 
 	cfg = config.MustLoad("../../../../config")
 	log = logger.New(cfg.Env)
-	log.Info("Starting auth gateway tests", "env", cfg.Env)
+	log.Info("Starting notification gateway tests", "env", cfg.Env)
 
 	apiClient = client.NewClient(cfg, log)
 	notificationClient = client.NewNotificationClient(apiClient)
