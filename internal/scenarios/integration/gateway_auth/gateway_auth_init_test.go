@@ -3,6 +3,7 @@ package gateway_auth
 import (
 	"flag"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/config"
@@ -11,12 +12,8 @@ import (
 )
 
 var (
-	cfg        *config.Config
-	log        *logger.Logger
-	apiClient  *client.Client
-	authClient *client.AuthClient
-
-	createdUsers []UserCleanupInfo
+	cfg *config.Config
+	log *logger.Logger
 )
 
 type UserCleanupInfo struct {
@@ -25,41 +22,55 @@ type UserCleanupInfo struct {
 	AccessToken string
 }
 
-func TestMain(m *testing.M) {
-	flag.Parse()
-
-	cfg = config.MustLoad("../../../../config")
-
-	log = logger.New(cfg.Env)
-	log.Info("Starting auth gateway tests", "env", cfg.Env)
-
-	apiClient = client.NewClient(cfg, log)
-	authClient = client.NewAuthClient(apiClient)
-
-	log.Info("Setup completed, starting tests")
-	code := m.Run()
-
-	if cfg.Test.Cleanup {
-		log.Info("Tests finished, cleaning up test data")
-		cleanup()
-	}
-
-	os.Exit(code)
+type TestContext struct {
+	APIClient    *client.Client
+	AuthClient   *client.AuthClient
+	UserClient   *client.UserClient
+	CreatedUsers []UserCleanupInfo
+	mu           sync.Mutex
 }
 
-func cleanup() {
-	log.Info("Starting cleanup process", "users_to_delete", len(createdUsers))
+func NewTestContext() *TestContext {
+	apiClient := client.NewClient(cfg, log)
+	return &TestContext{
+		APIClient:    apiClient,
+		AuthClient:   client.NewAuthClient(apiClient),
+		UserClient:   client.NewUserClient(apiClient),
+		CreatedUsers: make([]UserCleanupInfo, 0),
+	}
+}
+
+func (tc *TestContext) TrackUserForCleanup(userID int64, username, accessToken string) {
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
+
+	userInfo := UserCleanupInfo{
+		ID:          userID,
+		Username:    username,
+		AccessToken: accessToken,
+	}
+	tc.CreatedUsers = append(tc.CreatedUsers, userInfo)
+	log.Debug("Added user to cleanup list", "user_id", userID, "username", username)
+}
+
+func (tc *TestContext) Cleanup() {
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
+
+	if len(tc.CreatedUsers) == 0 {
+		return
+	}
+
+	log.Info("Starting cleanup process", "users_to_delete", len(tc.CreatedUsers))
 
 	var successfulUserDeletions int
 
-	userClient := client.NewUserClient(apiClient)
-
-	for _, userInfo := range createdUsers {
+	for _, userInfo := range tc.CreatedUsers {
 		log.Debug("Attempting to delete user", "user_id", userInfo.ID, "username", userInfo.Username)
 
-		apiClient.SetToken(userInfo.AccessToken)
+		tc.APIClient.SetToken(userInfo.AccessToken)
 
-		err := userClient.DeleteUser(userInfo.ID)
+		err := tc.UserClient.DeleteUser(userInfo.ID)
 		if err != nil {
 			log.Warn("Failed to delete user during cleanup",
 				"user_id", userInfo.ID,
@@ -71,21 +82,22 @@ func cleanup() {
 		}
 	}
 
-	apiClient.SetToken("")
+	tc.APIClient.SetToken("")
 
 	log.Info("Cleanup process completed",
 		"successful_user_deletions", successfulUserDeletions,
-		"total_users", len(createdUsers))
+		"total_users", len(tc.CreatedUsers))
 
-	createdUsers = []UserCleanupInfo{}
+	tc.CreatedUsers = []UserCleanupInfo{}
 }
 
-func trackUserForCleanup(userID int64, username, accessToken string) {
-	userInfo := UserCleanupInfo{
-		ID:          userID,
-		Username:    username,
-		AccessToken: accessToken,
-	}
-	createdUsers = append(createdUsers, userInfo)
-	log.Debug("Added user to cleanup list", "user_id", userID, "username", username)
+func TestMain(m *testing.M) {
+	flag.Parse()
+
+	cfg = config.MustLoad("../../../../config")
+	log = logger.New(cfg.Env)
+	log.Info("Starting auth gateway tests", "env", cfg.Env)
+
+	code := m.Run()
+	os.Exit(code)
 }
