@@ -78,7 +78,7 @@ func (uc *UserClient) UpdateUser(req fixtures.UpdateUserRequest) (*fixtures.Upda
 	uc.client.log.Info("Updating user", slog.Int64("user_id", req.ID))
 
 	var response fixtures.UpdateUserResponse
-	err := uc.client.Put("/v1/users/"+strconv.FormatInt(req.ID, 10), req, &response)
+	err := uc.client.Put("/v1/users", req, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to update user", slog.Int64("user_id", req.ID), slog.String("error", err.Error()))
 		return nil, err
