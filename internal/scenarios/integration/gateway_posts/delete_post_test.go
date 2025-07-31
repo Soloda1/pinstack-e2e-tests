@@ -93,8 +93,11 @@ func TestDeletePostNotFound(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	accessToken, _, _, teardown := setupDeletePostTest(t, tc)
+	accessToken, userID, postID, teardown := setupDeletePostTest(t, tc)
 	defer teardown()
+
+	// Add post to cleanup list since we won't delete it in the test
+	tc.TrackPostForCleanup(postID, userID, accessToken)
 
 	tc.APIClient.SetToken(accessToken)
 
