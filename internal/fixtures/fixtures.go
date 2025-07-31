@@ -223,9 +223,11 @@ func GeneratePostMedia(id int64) PostMedia {
 }
 
 func GenerateTag() Tag {
+	timestamp := strconv.Itoa(time.Now().Nanosecond())
+	prefix := "test" + timestamp
 	return Tag{
 		ID:   int64(safeRandIntn(MaxTestID) + 1),
-		Name: "test" + gofakeit.Word(),
+		Name: prefix + gofakeit.Generate("????????????????????"),
 	}
 }
 
