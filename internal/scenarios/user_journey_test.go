@@ -290,7 +290,7 @@ func testUserProfileManagement(t *testing.T) {
 		AvatarURL: newAvatarURL,
 	}
 
-	err = userClient.UpdateAvatar(user.ID, avatarReq)
+	err = userClient.UpdateAvatar(avatarReq)
 	if err != nil {
 		t.Fatalf("Failed to update avatar: %v", err)
 	}
