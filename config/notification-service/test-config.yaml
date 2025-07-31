@@ -6,7 +6,7 @@ grpc_server:
 
 
 kafka:
-  brokers: "kafka1-test:9092,kafka2-test:9092,kafka3-test:9092"
+  brokers: "kafka-test:9092"
   acks: "all"
   retries: 3
   retry_backoff_ms: 500
