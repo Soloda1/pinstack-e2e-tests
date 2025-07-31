@@ -27,8 +27,8 @@ const (
 	// Collection sizes
 	MaxMediaItems    = 5
 	MaxTagItems      = 4
-	MinTagItems      = 1
-	MaxMediaPosition = 9
+	MinTagItems      = 2
+	MaxMediaPosition = 8
 
 	// Time constants
 	MaxDaysAgo            = 30
@@ -36,7 +36,7 @@ const (
 
 	// String lengths
 	BioSentences   = 10
-	TitleSentences = 5
+	TitleSentences = 3
 
 	// Test data limits
 	DefaultUserJourneyPostCount         = 3
@@ -223,9 +223,11 @@ func GeneratePostMedia(id int64) PostMedia {
 }
 
 func GenerateTag() Tag {
+	timestamp := strconv.Itoa(time.Now().Nanosecond())
+	prefix := "test" + timestamp
 	return Tag{
 		ID:   int64(safeRandIntn(MaxTestID) + 1),
-		Name: "test" + gofakeit.Word(),
+		Name: prefix + gofakeit.Generate("????????????????????"),
 	}
 }
 
@@ -279,7 +281,7 @@ func GenerateCreatePostRequest() *CreatePostRequest {
 
 	var tags []string
 	for i := 0; i < safeRandIntn(MaxTagItems)+MinTagItems; i++ {
-		tags = append(tags, gofakeit.Word())
+		tags = append(tags, GenerateTag().Name)
 	}
 
 	return &CreatePostRequest{
@@ -298,7 +300,7 @@ func GenerateUpdatePostRequest() *UpdatePostRequest {
 
 	var tags []string
 	for i := 0; i < safeRandIntn(MaxTagItems)+MinTagItems; i++ {
-		tags = append(tags, gofakeit.Word())
+		tags = append(tags, GenerateTag().Name)
 	}
 
 	return &UpdatePostRequest{

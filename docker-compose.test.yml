@@ -10,8 +10,22 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: userservice_test
       POSTGRES_PORT: 5432
-    command: postgres -p 5432
-    # Удалены постоянные тома для тестовой среды
+      # Оптимизация для минимального потребления памяти
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    command: >
+      postgres -p 5432
+      -c shared_buffers=64MB
+      -c effective_cache_size=128MB
+      -c maintenance_work_mem=32MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=8MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=2MB
+      -c min_wal_size=80MB
+      -c max_wal_size=1GB
+      -c max_connections=50
     ports:
       - "42432:5432"
     networks:
@@ -21,6 +35,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    # Для GitHub Actions - обычные volumes, но без named volumes
+    # При docker compose down -v все удалится
+    shm_size: 128mb
 
   user-migrator-test:
     container_name: pinstack-user-migrator-test
@@ -31,8 +48,8 @@ services:
       user-db-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-user-service/migrations:/app/migrations
-      - ./config/user-service/test-config.yaml:/app/config/config.yaml
+      - ../pinstack-user-service/migrations:/app/migrations:ro
+      - ./config/user-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
     networks:
@@ -46,6 +63,9 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_LISTEN_PORT: 5050
+      # Минимальные настройки для экономии памяти
+      PGADMIN_CONFIG_SESSION_EXPIRATION_TIME: 1
+      PGADMIN_CONFIG_CHECK_SESSION_FILES_INTERVAL: 30
     ports:
       - "42050:5050"
     depends_on:
@@ -63,9 +83,12 @@ services:
       user-migrator-test:
         condition: service_completed_successfully
     volumes:
-      - ./config/user-service/test-config.yaml:/app/config/config.yaml
+      - ./config/user-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
+      # Ограничиваем память для Go сервиса
+      - GOMEMLIMIT=100MiB
+      - GOGC=50
     networks:
       - pinstack-test
     ports:
@@ -73,8 +96,15 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "200m"
-        max-file: "10"
+        max-size: "50m"
+        max-file: "2"
+    # Ограничиваем ресурсы
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
   ######################
   # Postgres (auth-service)
@@ -87,8 +117,13 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: authservice_test
       POSTGRES_PORT: 5432
-    command: postgres -p 5432
-    # Удалены постоянные тома для тестовой среды
+    command: >
+      postgres -p 5432
+      -c shared_buffers=64MB
+      -c effective_cache_size=128MB
+      -c maintenance_work_mem=32MB
+      -c work_mem=2MB
+      -c max_connections=50
     ports:
       - "42433:5432"
     networks:
@@ -98,6 +133,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    shm_size: 128mb
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
   auth-migrator-test:
     container_name: pinstack-auth-migrator-test
@@ -108,8 +150,8 @@ services:
       auth-db-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-auth-service/migrations:/app/migrations
-      - ./config/auth-service/test-config.yaml:/app/config/config.yaml
+      - ../pinstack-auth-service/migrations:/app/migrations:ro
+      - ./config/auth-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
     networks:
@@ -127,9 +169,11 @@ services:
       user-service-test:
         condition: service_started
     volumes:
-      - ./config/auth-service/test-config.yaml:/app/config/config.yaml
+      - ./config/auth-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
+      - GOMEMLIMIT=100MiB
+      - GOGC=50
     networks:
       - pinstack-test
     ports:
@@ -137,8 +181,14 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "200m"
-        max-file: "10"
+        max-size: "50m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
   ######################
   # Postgres (post-service)
@@ -151,8 +201,13 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: postservice_test
       POSTGRES_PORT: 5432
-    command: postgres -p 5432
-    # Удалены постоянные тома для тестовой среды
+    command: >
+      postgres -p 5432
+      -c shared_buffers=64MB
+      -c effective_cache_size=128MB
+      -c maintenance_work_mem=32MB
+      -c work_mem=2MB
+      -c max_connections=50
     ports:
       - "42434:5432"
     networks:
@@ -162,6 +217,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    shm_size: 128mb
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
   post-migrator-test:
     container_name: pinstack-post-migrator-test
@@ -172,8 +234,8 @@ services:
       post-db-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-post-service/migrations:/app/migrations
-      - ./config/post-service/test-config.yaml:/app/config/config.yaml
+      - ../pinstack-post-service/migrations:/app/migrations:ro
+      - ./config/post-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
     networks:
@@ -191,9 +253,11 @@ services:
       user-service-test:
         condition: service_started
     volumes:
-      - ./config/post-service/test-config.yaml:/app/config/config.yaml
+      - ./config/post-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
+      - GOMEMLIMIT=100MiB
+      - GOGC=50
     networks:
       - pinstack-test
     ports:
@@ -201,8 +265,14 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "200m"
-        max-file: "10"
+        max-size: "50m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
   ######################
   # Postgres (relation-service)
@@ -215,8 +285,13 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: relationservice_test
       POSTGRES_PORT: 5432
-    command: postgres -p 5432
-    # Удалены постоянные тома для тестовой среды
+    command: >
+      postgres -p 5432
+      -c shared_buffers=64MB
+      -c effective_cache_size=128MB
+      -c maintenance_work_mem=32MB
+      -c work_mem=2MB
+      -c max_connections=50
     ports:
       - "42435:5432"
     networks:
@@ -226,6 +301,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    shm_size: 128mb
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
   relation-migrator-test:
     container_name: pinstack-relation-migrator-test
@@ -236,8 +318,8 @@ services:
       relation-db-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-relation-service/migrations:/app/migrations
-      - ./config/relation-service/test-config.yaml:/app/config/config.yaml
+      - ../pinstack-relation-service/migrations:/app/migrations:ro
+      - ./config/relation-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
     networks:
@@ -257,9 +339,11 @@ services:
       kafka-topics-init-test:
         condition: service_completed_successfully
     volumes:
-      - ./config/relation-service/test-config.yaml:/app/config/config.yaml
+      - ./config/relation-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
+      - GOMEMLIMIT=100MiB
+      - GOGC=50
     networks:
       - pinstack-test
     ports:
@@ -267,8 +351,14 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "200m"
-        max-file: "10"
+        max-size: "50m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
   ##################
   # API Gateway
@@ -282,9 +372,11 @@ services:
       - user-service-test
       - auth-service-test
     volumes:
-      - ./config/api-gateway/test-config.yaml:/app/config/config.yaml
+      - ./config/api-gateway/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
+      - GOMEMLIMIT=100MiB
+      - GOGC=50
     networks:
       - pinstack-test
     ports:
@@ -292,201 +384,98 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "200m"
-        max-file: "10"
-
-  #  ##################
-  #  # NGINX
-  #  ##################
-  #  nginx-test:
-  #    image: nginx:alpine
-  #    container_name: pinstack-nginx-test
-  #    ports:
-  #      - "42800:80"
-  #    volumes:
-  #      - ./config/nginx.test.conf:/etc/nginx/nginx.conf:ro
-  #    depends_on:
-  #      - api-gateway-test
-  #    networks:
-  #      - pinstack-test
+        max-size: "50m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
   ##################
-  # Kafka (KRaft mode for notifications)
+  # Kafka (упрощенная конфигурация для экономии памяти)
   ##################
-  kafka1-test:
+  kafka-test:
     image: confluentinc/cp-kafka:latest
-    container_name: pinstack-kafka1-test
-    hostname: kafka1-test
+    container_name: pinstack-kafka-test
+    hostname: kafka-test
     ports:
       - "42092:9092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1-test:9093,2@kafka2-test:9093,3@kafka3-test:9093'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-test:9093'
       KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka1-test:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-test:9092'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       CLUSTER_ID: 'TEST3OEVBNTcwNTJENDM2Qk'
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      # Минимальные настройки для экономии памяти
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      # Логирование только ошибок
       KAFKA_LOG4J_ROOT_LOGLEVEL: "ERROR"
-      KAFKA_LOG4J_LOGGERS: "org.apache.kafka=ERROR,kafka=ERROR,kafka.cluster=ERROR,kafka.controller=ERROR,kafka.coordinator=ERROR,kafka.log=ERROR,kafka.server=ERROR,kafka.zookeeper=ERROR,kafka.network=ERROR,state.change.logger=ERROR"
+      KAFKA_LOG4J_LOGGERS: "org.apache.kafka=ERROR,kafka=ERROR"
       KAFKA_TOOLS_LOG4J_LOGLEVEL: "ERROR"
-      KAFKA_LOG4J_APPENDER_STDOUT_THRESHOLD: "ERROR"
-      KAFKA_AUTHORIZER_LOGGER_NAME: "ERROR"
-      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=false"
-      KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
-      KAFKA_LOG_LEVEL: "ERROR"
-    # Удалены постоянные тома для тестовой среды
+      # Ограничение памяти
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms256M"
+      KAFKA_JVM_PERFORMANCE_OPTS: "-XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35"
     networks:
       - pinstack-test
     healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka1-test:9092 --list > /dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka-test:9092 --list > /dev/null 2>&1 || exit 1"]
       interval: 15s
       timeout: 10s
-      retries: 10
+      retries: 5
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
-        max-file: "2"
-        tag: "kafka1-test-only-errors"
-        env: "KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR"
-
-  kafka2-test:
-    image: confluentinc/cp-kafka:latest
-    container_name: pinstack-kafka2-test
-    hostname: kafka2-test
-    ports:
-      - "42093:9092"
-    environment:
-      KAFKA_NODE_ID: 2
-      KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1-test:9093,2@kafka2-test:9093,3@kafka3-test:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka2-test:9092'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      CLUSTER_ID: 'TEST3OEVBNTcwNTJENDM2Qk'
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_LOG4J_ROOT_LOGLEVEL: "ERROR"
-      KAFKA_LOG4J_LOGGERS: "org.apache.kafka=ERROR,kafka=ERROR,kafka.cluster=ERROR,kafka.controller=ERROR,kafka.coordinator=ERROR,kafka.log=ERROR,kafka.server=ERROR,kafka.zookeeper=ERROR,kafka.network=ERROR,state.change.logger=ERROR"
-      KAFKA_TOOLS_LOG4J_LOGLEVEL: "ERROR"
-      KAFKA_LOG4J_APPENDER_STDOUT_THRESHOLD: "ERROR"
-      KAFKA_AUTHORIZER_LOGGER_NAME: "ERROR"
-      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=false"
-      KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
-      KAFKA_LOG_LEVEL: "ERROR"
-    # Удалены постоянные тома для тестовой среды
-    networks:
-      - pinstack-test
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka2-test:9092 --list > /dev/null 2>&1 || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "2"
-        tag: "kafka2-test-only-errors"
-        env: "KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR"
-
-  kafka3-test:
-    image: confluentinc/cp-kafka:latest
-    container_name: pinstack-kafka3-test
-    hostname: kafka3-test
-    ports:
-      - "42094:9092"
-    environment:
-      KAFKA_NODE_ID: 3
-      KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1-test:9093,2@kafka2-test:9093,3@kafka3-test:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka3-test:9092'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      CLUSTER_ID: 'TEST3OEVBNTcwNTJENDM2Qk'
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_LOG4J_ROOT_LOGLEVEL: "ERROR"
-      KAFKA_LOG4J_LOGGERS: "org.apache.kafka=ERROR,kafka=ERROR,kafka.cluster=ERROR,kafka.controller=ERROR,kafka.coordinator=ERROR,kafka.log=ERROR,kafka.server=ERROR,kafka.zookeeper=ERROR,kafka.network=ERROR,state.change.logger=ERROR"
-      KAFKA_TOOLS_LOG4J_LOGLEVEL: "ERROR"
-      KAFKA_LOG4J_APPENDER_STDOUT_THRESHOLD: "ERROR"
-      KAFKA_AUTHORIZER_LOGGER_NAME: "ERROR"
-      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote=false"
-      KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
-      KAFKA_LOG_LEVEL: "ERROR"
-    # Удалены постоянные тома для тестовой среды
-    networks:
-      - pinstack-test
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka3-test:9092 --list > /dev/null 2>&1 || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "2"
-        tag: "kafka3-test-only-errors"
-        env: "KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 512M
 
   ##################
-  # Kafka Topics Initialization
+  # Kafka Topics Initialization (упрощенная)
   ##################
   kafka-topics-init-test:
     image: confluentinc/cp-kafka:latest
     container_name: pinstack-kafka-topics-init-test
     depends_on:
-      kafka1-test:
-        condition: service_healthy
-      kafka2-test:
-        condition: service_healthy
-      kafka3-test:
+      kafka-test:
         condition: service_healthy
     networks:
       - pinstack-test
     command: >
       bash -c "
-        echo 'Ожидаем готовности Kafka кластера...'
-        sleep 10
+        echo 'Ожидаем готовности Kafka...'
+        sleep 5
       
-        BOOTSTRAP_SERVERS='kafka1-test:9092,kafka2-test:9092,kafka3-test:9092'
-      
-        echo '=== Создаем топики ==='
+        BOOTSTRAP_SERVERS='kafka-test:9092'
       
         echo 'Создаем топик relation-events...'
-        kafka-topics --bootstrap-server \$$BOOTSTRAP_SERVERS --create --topic relation-events --partitions 3 --replication-factor 3 --if-not-exists --config cleanup.policy=delete --config retention.ms=604800000
+        kafka-topics --bootstrap-server \$$BOOTSTRAP_SERVERS --create --topic relation-events --partitions 1 --replication-factor 1 --if-not-exists
       
-        # Если понадобятся еще топики, добавь их здесь:
-        # echo 'Создаем топик notification-events...'
-        # kafka-topics --bootstrap-server \$$BOOTSTRAP_SERVERS --create --topic notification-events --partitions 3 --replication-factor 3 --if-not-exists --config cleanup.policy=delete --config retention.ms=604800000
-      
-        echo '=== Проверяем результат ==='
-        echo 'Список всех топиков:'
+        echo 'Список топиков:'
         kafka-topics --bootstrap-server \$$BOOTSTRAP_SERVERS --list
       
-        echo 'Детали топика relation-events:'
-        kafka-topics --bootstrap-server \$$BOOTSTRAP_SERVERS --describe --topic relation-events
-      
-        echo 'Инициализация топиков завершена успешно!'
+        echo 'Инициализация завершена!'
       "
     restart: "no"
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
+        max-size: "5m"
         max-file: "1"
 
   ######################
@@ -500,8 +489,13 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: notificationservice_test
       POSTGRES_PORT: 5432
-    command: postgres -p 5432
-    # Удалены постоянные тома для тестовой среды
+    command: >
+      postgres -p 5432
+      -c shared_buffers=64MB
+      -c effective_cache_size=128MB
+      -c maintenance_work_mem=32MB
+      -c work_mem=2MB
+      -c max_connections=50
     ports:
       - "42436:5432"
     networks:
@@ -511,6 +505,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    shm_size: 128mb
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
   notification-migrator-test:
     container_name: pinstack-notification-migrator-test
@@ -521,8 +522,8 @@ services:
       notification-db-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-notification-service/migrations:/app/migrations
-      - ./config/notification-service/test-config.yaml:/app/config/config.yaml
+      - ../pinstack-notification-service/migrations:/app/migrations:ro
+      - ./config/notification-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
     networks:
@@ -544,9 +545,11 @@ services:
       kafka-topics-init-test:
         condition: service_completed_successfully
     volumes:
-      - ./config/notification-service/test-config.yaml:/app/config/config.yaml
+      - ./config/notification-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
+      - GOMEMLIMIT=100MiB
+      - GOGC=50
     networks:
       - pinstack-test
     ports:
@@ -554,10 +557,15 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "200m"
-        max-file: "10"
+        max-size: "50m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
 networks:
   pinstack-test:
-    external: true
     driver: bridge

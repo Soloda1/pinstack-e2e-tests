@@ -145,8 +145,6 @@ type CreatePostResponse struct {
 	AuthorID        int64       `json:"author_id"`
 	AuthorUsername  string      `json:"author_username"`
 	AuthorFullName  string      `json:"author_full_name"`
-	AuthorEmail     string      `json:"author_email"`
-	AuthorBio       string      `json:"author_bio"`
 	AuthorAvatarURL string      `json:"author_avatar_url"`
 	Media           []PostMedia `json:"media"`
 	Tags            []Tag       `json:"tags"`
