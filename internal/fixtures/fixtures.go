@@ -163,13 +163,29 @@ func GenerateCreateUserRequest() *CreateUserRequest {
 	}
 }
 
-func GenerateUpdateUserRequest(id int64) *UpdateUserRequest {
+func GenerateUpdateUserRequest(id int64, username, email, fullName, bio string) *UpdateUserRequest {
+	if username == "" {
+		username = gofakeit.Username()
+	}
+
+	if email == "" {
+		email = gofakeit.Email()
+	}
+
+	if fullName == "" {
+		fullName = gofakeit.Name()
+	}
+
+	if bio == "" {
+		bio = gofakeit.HipsterSentence(BioSentences)
+	}
+
 	return &UpdateUserRequest{
 		ID:       id,
-		Username: gofakeit.Username(),
-		Email:    gofakeit.Email(),
-		FullName: gofakeit.Name(),
-		Bio:      gofakeit.HipsterSentence(BioSentences),
+		Username: username,
+		Email:    email,
+		FullName: fullName,
+		Bio:      bio,
 	}
 }
 

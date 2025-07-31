@@ -78,7 +78,7 @@ func (uc *UserClient) UpdateUser(req fixtures.UpdateUserRequest) (*fixtures.Upda
 	uc.client.log.Info("Updating user", slog.Int64("user_id", req.ID))
 
 	var response fixtures.UpdateUserResponse
-	err := uc.client.Put("/v1/users/"+strconv.FormatInt(req.ID, 10), req, &response)
+	err := uc.client.Put("/v1/users", req, &response)
 	if err != nil {
 		uc.client.log.Error("Failed to update user", slog.Int64("user_id", req.ID), slog.String("error", err.Error()))
 		return nil, err
@@ -88,16 +88,16 @@ func (uc *UserClient) UpdateUser(req fixtures.UpdateUserRequest) (*fixtures.Upda
 	return &response, nil
 }
 
-func (uc *UserClient) UpdateAvatar(userID int64, req fixtures.UpdateAvatarRequest) error {
-	uc.client.log.Info("Updating user avatar", slog.Int64("user_id", userID))
+func (uc *UserClient) UpdateAvatar(req fixtures.UpdateAvatarRequest) error {
+	uc.client.log.Info("Updating user avatar")
 
-	err := uc.client.Put("/v1/users/"+strconv.FormatInt(userID, 10)+"/avatar", req, nil)
+	err := uc.client.Put("/v1/users/avatar", req, nil)
 	if err != nil {
-		uc.client.log.Error("Failed to update avatar", slog.Int64("user_id", userID), slog.String("error", err.Error()))
+		uc.client.log.Error("Failed to update avatar", slog.String("error", err.Error()))
 		return err
 	}
 
-	uc.client.log.Info("User avatar updated successfully", slog.Int64("user_id", userID))
+	uc.client.log.Info("User avatar updated successfully")
 	return nil
 }
 
