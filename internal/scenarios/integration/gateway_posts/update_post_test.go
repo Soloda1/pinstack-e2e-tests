@@ -56,7 +56,23 @@ func TestUpdatePost(t *testing.T) {
 
 	// Update the post
 	updatedPost, err := tc.PostClient.UpdatePost(postID, *updateReq)
-	require.NoError(t, err)
+	require.NoError(t, err, "Failed to update post")
+
+	// Verify the updated data
+	assert.Equal(t, postID, updatedPost.ID, "Post ID should not change")
+	assert.Equal(t, authorID, updatedPost.Author.ID, "Post author should not change")
+	assert.Equal(t, updateReq.Title, updatedPost.Title, "Title should be updated")
+	assert.Equal(t, updateReq.Content, updatedPost.Content, "Content should be updated")
+
+	// Check if tags were updated correctly
+	assert.Equal(t, len(updateReq.Tags), len(updatedPost.Tags), "Should have the same number of tags")
+	tagMap := make(map[string]bool)
+	for _, tag := range updatedPost.Tags {
+		tagMap[tag.Name] = true
+	}
+	for _, tag := range updateReq.Tags {
+		assert.True(t, tagMap[tag], "Updated post should contain tag %s", tag)
+	}
 
 	// Verify the updated data
 	assert.Equal(t, updateReq.Title, updatedPost.Title)
