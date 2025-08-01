@@ -313,15 +313,21 @@ func GenerateUpdatePostRequest() *UpdatePostRequest {
 
 // ========= Relation Data Generators =========
 
-func GenerateFollowRequest() *FollowRequest {
+func GenerateFollowRequest(followeeId int64) *FollowRequest {
+	if followeeId == 0 {
+		followeeId = int64(safeRandIntn(MaxTestID) + 1)
+	}
 	return &FollowRequest{
-		FolloweeID: int64(safeRandIntn(MaxTestID) + 1),
+		FolloweeID: followeeId,
 	}
 }
 
-func GenerateUnfollowRequest() *UnfollowRequest {
+func GenerateUnfollowRequest(followeeId int64) *UnfollowRequest {
+	if followeeId == 0 {
+		followeeId = int64(safeRandIntn(MaxTestID) + 1)
+	}
 	return &UnfollowRequest{
-		FolloweeID: int64(safeRandIntn(MaxTestID) + 1),
+		FolloweeID: followeeId,
 	}
 }
 
@@ -329,11 +335,11 @@ func GenerateUnfollowRequest() *UnfollowRequest {
 
 const (
 	// Notification types
-	NotificationTypeFollow  = "follow"
-	NotificationTypeLike    = "like"
-	NotificationTypeComment = "comment"
-	NotificationTypeMention = "mention"
-	NotificationTypeSystem  = "system"
+	NotificationTypeFollowCreated = "follow_created"
+	NotificationTypeLike          = "like"
+	NotificationTypeComment       = "comment"
+	NotificationTypeMention       = "mention"
+	NotificationTypeSystem        = "system"
 
 	// Payload constants
 	PayloadDataKey = "data"
@@ -343,17 +349,20 @@ const (
 )
 
 var NotificationTypes = []string{
-	NotificationTypeFollow,
+	NotificationTypeFollowCreated,
 	NotificationTypeLike,
 	NotificationTypeComment,
 	NotificationTypeMention,
 	NotificationTypeSystem,
 }
 
-func GenerateNotification() *Notification {
+func GenerateNotification(userId int64) *Notification {
+	if userId == 0 {
+		userId = int64(safeRandIntn(MaxTestID) + 1)
+	}
 	return &Notification{
 		ID:        int64(safeRandIntn(MaxTestID) + 1),
-		UserID:    int64(safeRandIntn(MaxTestID) + 1),
+		UserID:    userId,
 		Type:      NotificationTypes[safeRandIntn(len(NotificationTypes))],
 		Payload:   map[string]interface{}{PayloadDataKey: gofakeit.Sentence(TitleSentences)},
 		IsRead:    safeRandIntn(RandomBoolModulo) == 1,
@@ -361,9 +370,12 @@ func GenerateNotification() *Notification {
 	}
 }
 
-func GenerateSendNotificationRequest() *SendNotificationRequest {
+func GenerateSendNotificationRequest(userId int64) *SendNotificationRequest {
+	if userId == 0 {
+		userId = int64(safeRandIntn(MaxTestID) + 1)
+	}
 	return &SendNotificationRequest{
-		UserID:  int64(safeRandIntn(MaxTestID) + 1),
+		UserID:  userId,
 		Type:    NotificationTypes[safeRandIntn(len(NotificationTypes))],
 		Payload: map[string]interface{}{PayloadDataKey: gofakeit.Sentence(TitleSentences)},
 	}
@@ -390,7 +402,7 @@ func GenerateTestPosts(count int) []*Post {
 func GenerateTestNotifications(userID int64, count int) []*Notification {
 	var notifications []*Notification
 	for i := 0; i < count; i++ {
-		notification := GenerateNotification()
+		notification := GenerateNotification(userID)
 		notification.UserID = userID
 		notifications = append(notifications, notification)
 	}
