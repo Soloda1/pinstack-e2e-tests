@@ -106,7 +106,7 @@ func (nc *NotificationClient) ReadAllUserNotifications(userID int64) (*fixtures.
 	nc.client.log.Info("Marking all notifications as read for user", slog.Int64("user_id", userID))
 
 	var response fixtures.ReadAllUserNotificationsResponse
-	err := nc.client.Put("/v1/notification/read-all/"+strconv.FormatInt(userID, 10), nil, &response)
+	err := nc.client.Put("/v1/notification/read-all", nil, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to mark all notifications as read",
 			slog.Int64("user_id", userID),
@@ -126,7 +126,7 @@ func (nc *NotificationClient) GetUnreadCount(userID int64) (*fixtures.GetUnreadC
 	nc.client.log.Debug("Getting unread notification count", slog.Int64("user_id", userID))
 
 	var response fixtures.GetUnreadCountResponse
-	err := nc.client.Get("/v1/notification/unread-count/"+strconv.FormatInt(userID, 10), nil, &response)
+	err := nc.client.Get("/v1/notification/unread-count", nil, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to get unread notification count",
 			slog.Int64("user_id", userID),
@@ -154,7 +154,7 @@ func (nc *NotificationClient) GetUserNotificationFeed(userID int64, page, limit 
 	queryParams.Add("limit", strconv.Itoa(limit))
 
 	var response fixtures.GetUserNotificationFeedResponse
-	err := nc.client.Get("/v1/notification/feed/"+strconv.FormatInt(userID, 10), queryParams, &response)
+	err := nc.client.Get("/v1/notification/feed", queryParams, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to get user notification feed",
 			slog.Int64("user_id", userID),
