@@ -3,6 +3,7 @@ package gateway_notification
 import (
 	"testing"
 
+	"github.com/Soloda1/pinstack-system-tests/internal/custom_errors"
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -11,7 +12,6 @@ import (
 func setupSendNotificationTest(t *testing.T, tc *TestContext) (senderToken string, senderId int64, recipientID int64, recipientToken string, teardown func()) {
 	t.Helper()
 
-	// Register sender user
 	senderRegisterReq := fixtures.GenerateRegisterRequest()
 	log.Info("Setting up send notification test - registering sender", "test", t.Name(), "username", senderRegisterReq.Username)
 
@@ -23,7 +23,6 @@ func setupSendNotificationTest(t *testing.T, tc *TestContext) (senderToken strin
 
 	tc.TrackUserForCleanup(senderUser.ID, senderUser.Username, senderTokens.AccessToken)
 
-	// Register recipient user
 	recipientRegisterReq := fixtures.GenerateRegisterRequest()
 	log.Info("Setting up send notification test - registering recipient", "test", t.Name(), "username", recipientRegisterReq.Username)
 
@@ -46,36 +45,27 @@ func TestSendNotificationSuccess(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Setup test users (sender and recipient)
 	senderAccessToken, _, recipientID, recipientAccessToken, teardown := setupSendNotificationTest(t, tc)
 	defer teardown()
 
-	// Set sender's token for authorization
 	tc.APIClient.SetToken(senderAccessToken)
 
-	// Create notification request with different types
 	notificationTypes := fixtures.NotificationTypes
 
 	for _, notificationType := range notificationTypes {
 		t.Run(notificationType, func(t *testing.T) {
-			// Generate notification request using fixtures generator
 			notificationReqPtr := fixtures.GenerateSendNotificationRequest(recipientID) // Отправляем уведомление получателю
 			notificationReq := *notificationReqPtr                                      // Разыменование указателя для получения значения
 			notificationReq.Type = notificationType                                     // Override with specific type for this test
 
-			// Send notification
 			response, err := tc.NotificationClient.SendNotification(notificationReq)
 			require.NoError(t, err, "Failed to send notification")
 			assert.NotNil(t, response, "Response should not be nil")
 			assert.NotEmpty(t, response.Message, "Message should not be empty")
 			assert.Greater(t, response.NotificationID, int64(0), "Notification ID should be positive")
 
-			// Track notification for cleanup
 			tc.TrackNotificationForCleanup(response.NotificationID, recipientID, senderAccessToken, recipientAccessToken)
 
-			// Verify notification was created by getting it
-			// Важно: уведомления может читать только получатель, поэтому нужно установить токен получателя
-			// Но для упрощения тестирования мы просто проверим успешность создания уведомления
 			log.Info("Successfully sent notification", "notification_id", response.NotificationID, "type", notificationType)
 		})
 	}
@@ -86,14 +76,11 @@ func TestSendNotificationUnauthorized(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Setup test users
 	_, _, recipientID, _, teardown := setupSendNotificationTest(t, tc)
 	defer teardown()
 
-	// Clear token to simulate unauthorized request
 	tc.APIClient.SetToken("")
 
-	// Generate and customize notification request
 	notificationReqPtr := fixtures.GenerateSendNotificationRequest(recipientID)
 	notificationReq := *notificationReqPtr
 	notificationReq.Type = fixtures.NotificationTypeSystem
@@ -101,10 +88,9 @@ func TestSendNotificationUnauthorized(t *testing.T) {
 		"message": "Unauthorized notification",
 	}
 
-	// Attempt should fail with authentication error
 	_, err := tc.NotificationClient.SendNotification(notificationReq)
 	require.Error(t, err, "Unauthorized request should fail")
-	assert.Contains(t, err.Error(), "unauth", "Error should mention authorization issue")
+	assert.Contains(t, err.Error(), custom_errors.ErrUnauthenticated.Error(), "Error should be unauthenticated")
 }
 
 func TestSendNotificationInvalidToken(t *testing.T) {
@@ -112,22 +98,18 @@ func TestSendNotificationInvalidToken(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Setup test users
 	_, _, recipientID, _, teardown := setupSendNotificationTest(t, tc)
 	defer teardown()
 
-	// Set invalid token
 	tc.APIClient.SetToken("invalid_token_12345")
 
-	// Generate notification request
 	notificationReqPtr := fixtures.GenerateSendNotificationRequest(recipientID)
 	notificationReq := *notificationReqPtr
 	notificationReq.Type = fixtures.NotificationTypeSystem
 
-	// Attempt should fail with invalid token error
 	_, err := tc.NotificationClient.SendNotification(notificationReq)
 	require.Error(t, err, "Invalid token request should fail")
-	assert.Contains(t, err.Error(), "invalid token", "Error should mention authorization issue")
+	assert.Contains(t, err.Error(), custom_errors.ErrInvalidToken.Error(), "Error should be invalid token")
 }
 
 func TestSendNotificationToNonExistentUser(t *testing.T) {
@@ -135,21 +117,18 @@ func TestSendNotificationToNonExistentUser(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Setup test user (sender)
 	senderAccessToken, _, _, _, teardown := setupSendNotificationTest(t, tc)
 	defer teardown()
 
 	tc.APIClient.SetToken(senderAccessToken)
 
-	// Generate and customize notification request with non-existent user
 	notificationReqPtr := fixtures.GenerateSendNotificationRequest(999999) // Non-existent user ID
 	notificationReq := *notificationReqPtr
 	notificationReq.Type = fixtures.NotificationTypeSystem
 
-	// Attempt should fail with user not found error
 	_, err := tc.NotificationClient.SendNotification(notificationReq)
 	require.Error(t, err, "Sending to non-existent user should fail")
-	assert.Contains(t, err.Error(), "not found", "Error should mention user not found")
+	assert.Contains(t, err.Error(), custom_errors.ErrUserNotFound.Error(), "Error should be user not found")
 }
 
 func TestSendNotificationValidationErrors(t *testing.T) {
@@ -157,21 +136,18 @@ func TestSendNotificationValidationErrors(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Setup test users
 	senderAccessToken, _, recipientID, _, teardown := setupSendNotificationTest(t, tc)
 	defer teardown()
 
 	tc.APIClient.SetToken(senderAccessToken)
 
-	// Prepare base request first using generator
 	baseNotifReqPtr := fixtures.GenerateSendNotificationRequest(recipientID)
 	baseNotifReq := *baseNotifReqPtr
 
-	// Define test cases with specific modifications
 	testCases := []struct {
 		name          string
 		setupNotifReq func() fixtures.SendNotificationRequest
-		expectedErr   string
+		expectedErr   error
 	}{
 		{
 			name: "EmptyType",
@@ -180,7 +156,7 @@ func TestSendNotificationValidationErrors(t *testing.T) {
 				req.Type = ""
 				return req
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed,
 		},
 		{
 			name: "ZeroUserID",
@@ -189,7 +165,7 @@ func TestSendNotificationValidationErrors(t *testing.T) {
 				req.UserID = 0
 				return req
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed,
 		},
 		{
 			name: "NegativeUserID",
@@ -198,28 +174,26 @@ func TestSendNotificationValidationErrors(t *testing.T) {
 				req.UserID = -1
 				return req
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed,
 		},
 	}
 
 	for _, tc := range testCases {
-		tc := tc // Capture range variable
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := NewTestContext()
 			defer ctx.Cleanup()
 
-			// Get a new token for each subtest to avoid conflicts
 			accessToken, _, _, _, teardown := setupSendNotificationTest(t, ctx)
 			defer teardown()
 
 			ctx.APIClient.SetToken(accessToken)
 
-			// Получаем настроенный запрос из setupNotifReq функции
 			notifReq := tc.setupNotifReq()
 			_, err := ctx.NotificationClient.SendNotification(notifReq)
 			require.Error(t, err, "Invalid request should fail")
-			assert.Contains(t, err.Error(), tc.expectedErr, "Error should mention validation failure")
+			assert.Contains(t, err.Error(), tc.expectedErr.Error(), "Error should match expected validation error")
 		})
 	}
 }
@@ -229,25 +203,19 @@ func TestSendNotificationSelfNotification(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Setup single user
 	accessToken, userID, teardown := setupTestUser(t, tc)
 	defer teardown()
 
 	tc.APIClient.SetToken(accessToken)
 
-	// Try to send notification to self
 	notificationReqPtr := fixtures.GenerateSendNotificationRequest(userID)
 	notificationReq := *notificationReqPtr
 	notificationReq.Type = fixtures.NotificationTypeFollowCreated
 
-	// This might be allowed or not depending on business logic
-	// Adjust the test based on your application's behavior
 	response, err := tc.NotificationClient.SendNotification(notificationReq)
 	if err != nil {
-		// If self-notifications are not allowed
-		assert.Contains(t, err.Error(), "forbidden", "Self-notification should be forbidden")
+		assert.Contains(t, err.Error(), custom_errors.ErrForbidden.Error(), "Self-notification should be forbidden")
 	} else {
-		// If self-notifications are allowed, track for cleanup
 		tc.TrackNotificationForCleanup(response.NotificationID, userID, accessToken, accessToken)
 		assert.NotNil(t, response, "Self-notification should be allowed")
 	}
