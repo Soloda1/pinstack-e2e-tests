@@ -106,7 +106,7 @@ func (nc *NotificationClient) ReadAllUserNotifications(userID int64) (*fixtures.
 	nc.client.log.Info("Marking all notifications as read for user", slog.Int64("user_id", userID))
 
 	var response fixtures.ReadAllUserNotificationsResponse
-	err := nc.client.Put("/v1/notification/read-all/"+strconv.FormatInt(userID, 10), nil, &response)
+	err := nc.client.Put("/v1/notification/read-all", nil, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to mark all notifications as read",
 			slog.Int64("user_id", userID),
