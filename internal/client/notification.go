@@ -154,7 +154,7 @@ func (nc *NotificationClient) GetUserNotificationFeed(userID int64, page, limit 
 	queryParams.Add("limit", strconv.Itoa(limit))
 
 	var response fixtures.GetUserNotificationFeedResponse
-	err := nc.client.Get("/v1/notification/feed/"+strconv.FormatInt(userID, 10), queryParams, &response)
+	err := nc.client.Get("/v1/notification/feed", queryParams, &response)
 	if err != nil {
 		nc.client.log.Error("Failed to get user notification feed",
 			slog.Int64("user_id", userID),
