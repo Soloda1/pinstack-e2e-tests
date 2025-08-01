@@ -25,9 +25,9 @@ type UserCleanupInfo struct {
 
 type NotificationCleanupInfo struct {
 	ID                   int64
-	UserID               int64  // ID получателя уведомления
-	SenderAccessToken    string // Токен отправителя (для создания уведомления)
-	RecipientAccessToken string // Токен получателя (для удаления уведомления)
+	UserID               int64
+	SenderAccessToken    string
+	RecipientAccessToken string
 }
 
 type TestContext struct {
@@ -92,7 +92,6 @@ func (tc *TestContext) Cleanup() {
 		for _, notificationInfo := range tc.CreatedNotifications {
 			log.Debug("Attempting to delete notification", "notification_id", notificationInfo.ID, "user_id", notificationInfo.UserID)
 
-			// Используем токен получателя для удаления уведомления
 			tc.APIClient.SetToken(notificationInfo.RecipientAccessToken)
 
 			resp, err := tc.NotificationClient.RemoveNotification(notificationInfo.ID)

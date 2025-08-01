@@ -54,9 +54,9 @@ func TestSendNotificationSuccess(t *testing.T) {
 
 	for _, notificationType := range notificationTypes {
 		t.Run(notificationType, func(t *testing.T) {
-			notificationReqPtr := fixtures.GenerateSendNotificationRequest(recipientID) // Отправляем уведомление получателю
-			notificationReq := *notificationReqPtr                                      // Разыменование указателя для получения значения
-			notificationReq.Type = notificationType                                     // Override with specific type for this test
+			notificationReqPtr := fixtures.GenerateSendNotificationRequest(recipientID)
+			notificationReq := *notificationReqPtr
+			notificationReq.Type = notificationType // Override with specific type for this test
 
 			response, err := tc.NotificationClient.SendNotification(notificationReq)
 			require.NoError(t, err, "Failed to send notification")
