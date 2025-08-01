@@ -100,36 +100,31 @@ func (tc *TestContext) TrackNotificationForCleanup(notificationID, userID int64,
 	log.Debug("Added notification to cleanup list", "notification_id", notificationID, "user_id", userID)
 }
 
-// Helper function to discover and track follow-related notifications
-func (tc *TestContext) DiscoverAndTrackFollowNotifications(followeeID int64, followeeToken string) {
+func (tc *TestContext) DiscoverAndTrackAllNotifications(userID int64, userToken string) {
 	tc.mu.Lock()
 	defer tc.mu.Unlock()
 
-	// Set token to access followee's notifications
-	tc.APIClient.SetToken(followeeToken)
+	tc.APIClient.SetToken(userToken)
 
-	// Get followee's notification feed to find follow_created notifications
-	feedResp, err := tc.NotificationClient.GetUserNotificationFeed(followeeID, 1, 100)
+	feedResp, err := tc.NotificationClient.GetUserNotificationFeed(userID, 1, 100)
 	if err != nil {
-		log.Warn("Failed to get notification feed for follow notification discovery",
-			"followee_id", followeeID,
+		log.Warn("Failed to get notification feed for notification discovery",
+			"user_id", userID,
 			"error", err.Error())
 		return
 	}
 
-	// Track all follow_created notifications for cleanup
 	for _, notification := range feedResp.Notifications {
-		if notification.Type == "follow_created" {
-			notificationInfo := NotificationCleanupInfo{
-				ID:                   notification.ID,
-				UserID:               notification.UserID,
-				RecipientAccessToken: followeeToken,
-			}
-			tc.CreatedNotifications = append(tc.CreatedNotifications, notificationInfo)
-			log.Debug("Discovered and tracked follow notification",
-				"notification_id", notification.ID,
-				"followee_id", followeeID)
+		notificationInfo := NotificationCleanupInfo{
+			ID:                   notification.ID,
+			UserID:               notification.UserID,
+			RecipientAccessToken: userToken,
 		}
+		tc.CreatedNotifications = append(tc.CreatedNotifications, notificationInfo)
+		log.Debug("Discovered and tracked notification",
+			"notification_id", notification.ID,
+			"user_id", userID,
+			"type", notification.Type)
 	}
 }
 
@@ -137,7 +132,6 @@ func (tc *TestContext) Cleanup() {
 	tc.mu.Lock()
 	defer tc.mu.Unlock()
 
-	// Clean up relations first (this will stop generating new notifications)
 	if len(tc.CreatedRelations) > 0 {
 		log.Info("Starting relation cleanup process", "relations_to_delete", len(tc.CreatedRelations))
 
@@ -170,7 +164,6 @@ func (tc *TestContext) Cleanup() {
 			"total_relations", len(tc.CreatedRelations))
 	}
 
-	// Clean up notifications
 	if len(tc.CreatedNotifications) > 0 {
 		log.Info("Starting notification cleanup process", "notifications_to_delete", len(tc.CreatedNotifications))
 
@@ -202,7 +195,6 @@ func (tc *TestContext) Cleanup() {
 			"total_notifications", len(tc.CreatedNotifications))
 	}
 
-	// Finally clean up users
 	if len(tc.CreatedUsers) > 0 {
 		log.Info("Starting user cleanup process", "users_to_delete", len(tc.CreatedUsers))
 
@@ -236,7 +228,6 @@ func (tc *TestContext) Cleanup() {
 	tc.CreatedUsers = []UserCleanupInfo{}
 }
 
-// Helper function for setting up test users
 func setupTestUser(t *testing.T, tc *TestContext) (string, int64, func()) {
 	t.Helper()
 
@@ -261,11 +252,9 @@ func setupTestUser(t *testing.T, tc *TestContext) (string, int64, func()) {
 	}
 }
 
-// Helper function for setting up follower and followee users
 func setupFollowRelationUsers(t *testing.T, tc *TestContext) (followerToken string, followerID int64, followeeToken string, followeeID int64, teardown func()) {
 	t.Helper()
 
-	// Register follower user
 	followerRegisterReq := fixtures.GenerateRegisterRequest()
 	log.Info("Setting up follow relation test - registering follower", "test", t.Name(), "username", followerRegisterReq.Username)
 
@@ -281,7 +270,6 @@ func setupFollowRelationUsers(t *testing.T, tc *TestContext) (followerToken stri
 
 	tc.TrackUserForCleanup(followerUser.ID, followerUser.Username, followerTokens.AccessToken)
 
-	// Register followee user
 	followeeRegisterReq := fixtures.GenerateRegisterRequest()
 	log.Info("Setting up follow relation test - registering followee", "test", t.Name(), "username", followeeRegisterReq.Username)
 
