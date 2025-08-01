@@ -24,9 +24,10 @@ type UserCleanupInfo struct {
 }
 
 type NotificationCleanupInfo struct {
-	ID          int64
-	UserID      int64
-	AccessToken string
+	ID                   int64
+	UserID               int64  // ID получателя уведомления
+	SenderAccessToken    string // Токен отправителя (для создания уведомления)
+	RecipientAccessToken string // Токен получателя (для удаления уведомления)
 }
 
 type TestContext struct {
@@ -64,14 +65,15 @@ func (tc *TestContext) TrackUserForCleanup(userID int64, username, accessToken s
 	log.Debug("Added user to cleanup list", "user_id", userID, "username", username)
 }
 
-func (tc *TestContext) TrackNotificationForCleanup(notificationID, userID int64, accessToken string) {
+func (tc *TestContext) TrackNotificationForCleanup(notificationID, userID int64, senderAccessToken, recipientAccessToken string) {
 	tc.mu.Lock()
 	defer tc.mu.Unlock()
 
 	notificationInfo := NotificationCleanupInfo{
-		ID:          notificationID,
-		UserID:      userID,
-		AccessToken: accessToken,
+		ID:                   notificationID,
+		UserID:               userID,
+		SenderAccessToken:    senderAccessToken,
+		RecipientAccessToken: recipientAccessToken,
 	}
 	tc.CreatedNotifications = append(tc.CreatedNotifications, notificationInfo)
 	log.Debug("Added notification to cleanup list", "notification_id", notificationID, "user_id", userID)
@@ -90,8 +92,8 @@ func (tc *TestContext) Cleanup() {
 		for _, notificationInfo := range tc.CreatedNotifications {
 			log.Debug("Attempting to delete notification", "notification_id", notificationInfo.ID, "user_id", notificationInfo.UserID)
 
-			// Use the access token of the user who owns the notification
-			tc.APIClient.SetToken(notificationInfo.AccessToken)
+			// Используем токен получателя для удаления уведомления
+			tc.APIClient.SetToken(notificationInfo.RecipientAccessToken)
 
 			resp, err := tc.NotificationClient.RemoveNotification(notificationInfo.ID)
 			if err != nil {
