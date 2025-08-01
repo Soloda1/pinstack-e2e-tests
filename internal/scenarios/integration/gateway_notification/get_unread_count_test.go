@@ -55,14 +55,12 @@ func TestGetUnreadCountSuccess(t *testing.T) {
 
 	tc.APIClient.SetToken(senderToken)
 	notificationsToSend := 3
-	var sentNotificationIDs []int64
 
 	for i := 0; i < notificationsToSend; i++ {
 		sendReq := fixtures.GenerateSendNotificationRequest(recipientID)
 		sendResp, err := tc.NotificationClient.SendNotification(*sendReq)
 		require.NoError(t, err, "Failed to send notification %d", i+1)
 
-		sentNotificationIDs = append(sentNotificationIDs, sendResp.NotificationID)
 		tc.TrackNotificationForCleanup(sendResp.NotificationID, recipientID, senderToken, recipientToken)
 	}
 
