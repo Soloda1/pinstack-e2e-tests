@@ -353,7 +353,7 @@ func GenerateGetFollowersResponse(page, limit int) *GetFollowersResponse {
 	}
 }
 
-func GenerateGetFolloweesResponse(userID int64, page, limit int) *GetFolloweesResponse {
+func GenerateGetFolloweesResponse(page, limit int) *GetFolloweesResponse {
 	count := safeRandIntn(limit) + 1
 	var followees []int64
 	for i := 0; i < count; i++ {
