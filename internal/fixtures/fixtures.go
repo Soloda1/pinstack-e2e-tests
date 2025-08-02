@@ -64,6 +64,13 @@ func safeRandIntn(n int) int {
 	return globalRand.Intn(n)
 }
 
+// random int64
+func safeRandInt64() int64 {
+	globalRandLock.Lock()
+	defer globalRandLock.Unlock()
+	return globalRand.Int63()
+}
+
 func initializeSeed() {
 	seedOnce.Do(func() {
 		seed := time.Now().UnixNano()
@@ -331,41 +338,33 @@ func GenerateUnfollowRequest(followeeId int64) *UnfollowRequest {
 	}
 }
 
-func GenerateGetFollowersResponse(userID int64, page, limit int) *GetFollowersResponse {
-	followers := GenerateTestUsers(safeRandIntn(limit) + 1)
-	total := len(followers) + safeRandIntn(50)
-	totalPages := (total + limit - 1) / limit
-
-	var followersUsers []User
-	for _, user := range followers {
-		followersUsers = append(followersUsers, *user)
+func GenerateGetFollowersResponse(page, limit int) *GetFollowersResponse {
+	count := safeRandIntn(limit) + 1
+	var followers []int64
+	for i := 0; i < count; i++ {
+		followers = append(followers, safeRandInt64())
 	}
 
 	return &GetFollowersResponse{
-		Followers:  followersUsers,
-		Page:       page,
-		Limit:      limit,
-		Total:      total,
-		TotalPages: totalPages,
+		Followers: followers,
+		Page:      page,
+		Limit:     limit,
+		Total:     count,
 	}
 }
 
 func GenerateGetFolloweesResponse(userID int64, page, limit int) *GetFolloweesResponse {
-	followees := GenerateTestUsers(safeRandIntn(limit) + 1)
-	total := len(followees) + safeRandIntn(50)
-	totalPages := (total + limit - 1) / limit
-
-	var followeesUsers []User
-	for _, user := range followees {
-		followeesUsers = append(followeesUsers, *user)
+	count := safeRandIntn(limit) + 1
+	var followees []int64
+	for i := 0; i < count; i++ {
+		followees = append(followees, safeRandInt64())
 	}
 
 	return &GetFolloweesResponse{
-		Followees:  followeesUsers,
-		Page:       page,
-		Limit:      limit,
-		Total:      total,
-		TotalPages: totalPages,
+		Followees: followees,
+		Page:      page,
+		Limit:     limit,
+		Total:     count,
 	}
 }
 

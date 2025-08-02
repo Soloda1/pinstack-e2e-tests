@@ -185,19 +185,17 @@ type UnfollowResponse struct {
 }
 
 type GetFollowersResponse struct {
-	Followers  []User `json:"followers"`
-	Page       int    `json:"page"`
-	Limit      int    `json:"limit"`
-	Total      int    `json:"total"`
-	TotalPages int    `json:"total_pages"`
+	Followers []int64 `json:"followers"`
+	Page      int     `json:"page"`
+	Limit     int     `json:"limit"`
+	Total     int     `json:"total"`
 }
 
 type GetFolloweesResponse struct {
-	Followees  []User `json:"followees"`
-	Page       int    `json:"page"`
-	Limit      int    `json:"limit"`
-	Total      int    `json:"total"`
-	TotalPages int    `json:"total_pages"`
+	Followees []int64 `json:"followees"`
+	Page      int     `json:"page"`
+	Limit     int     `json:"limit"`
+	Total     int     `json:"total"`
 }
 
 // ========= Notification Types =========
