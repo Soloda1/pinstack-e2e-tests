@@ -64,6 +64,13 @@ func safeRandIntn(n int) int {
 	return globalRand.Intn(n)
 }
 
+// random int64
+func safeRandInt64() int64 {
+	globalRandLock.Lock()
+	defer globalRandLock.Unlock()
+	return globalRand.Int63()
+}
+
 func initializeSeed() {
 	seedOnce.Do(func() {
 		seed := time.Now().UnixNano()
@@ -328,6 +335,36 @@ func GenerateUnfollowRequest(followeeId int64) *UnfollowRequest {
 	}
 	return &UnfollowRequest{
 		FolloweeID: followeeId,
+	}
+}
+
+func GenerateGetFollowersResponse(page, limit int) *GetFollowersResponse {
+	count := safeRandIntn(limit) + 1
+	var followers []int64
+	for i := 0; i < count; i++ {
+		followers = append(followers, safeRandInt64())
+	}
+
+	return &GetFollowersResponse{
+		Followers: followers,
+		Page:      page,
+		Limit:     limit,
+		Total:     count,
+	}
+}
+
+func GenerateGetFolloweesResponse(page, limit int) *GetFolloweesResponse {
+	count := safeRandIntn(limit) + 1
+	var followees []int64
+	for i := 0; i < count; i++ {
+		followees = append(followees, safeRandInt64())
+	}
+
+	return &GetFolloweesResponse{
+		Followees: followees,
+		Page:      page,
+		Limit:     limit,
+		Total:     count,
 	}
 }
 

@@ -6,6 +6,10 @@ api:
   client_id: "e2e-test-client"
   client_secret: "e2e-test-secret"
 
+outbox:
+  concurrency: 4
+  tick_interval_ms: 1000
+  batch_size: 100
 
 test:
   concurrent: 5

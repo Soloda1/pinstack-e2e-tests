@@ -184,6 +184,20 @@ type UnfollowResponse struct {
 	Message string `json:"message"`
 }
 
+type GetFollowersResponse struct {
+	Followers []int64 `json:"follower_ids"`
+	Page      int     `json:"page"`
+	Limit     int     `json:"limit"`
+	Total     int     `json:"total"`
+}
+
+type GetFolloweesResponse struct {
+	Followees []int64 `json:"followee_ids"`
+	Page      int     `json:"page"`
+	Limit     int     `json:"limit"`
+	Total     int     `json:"total"`
+}
+
 // ========= Notification Types =========
 
 type Notification struct {

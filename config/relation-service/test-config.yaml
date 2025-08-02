@@ -35,7 +35,7 @@ user_service:
 
 outbox:
   concurrency: 4
-  tick_interval_ms: 20000
+  tick_interval_ms: 1000
   batch_size: 100
 
 prometheus:
