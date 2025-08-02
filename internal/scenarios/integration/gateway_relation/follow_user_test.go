@@ -1,7 +1,6 @@
 package gateway_relation
 
 import (
-	"log/slog"
 	"testing"
 	"time"
 
@@ -229,16 +228,13 @@ func TestFollowUserWithNotificationGeneration(t *testing.T) {
 
 	tc.DiscoverAndTrackAllNotifications(followeeID, followeeToken)
 
-	// Wait kafka outbox worker
-	time.Sleep(1100 * time.Millisecond)
-	// Verify that followee received notification
+	time.Sleep(outboxTickInterval + 100*time.Millisecond)
 	tc.APIClient.SetToken(followeeToken)
 	feedResp, err := tc.NotificationClient.GetUserNotificationFeed(followeeID, 1, 10)
 	require.NoError(t, err, "Failed to get notification feed")
 
 	var foundFollowNotification bool
 	for _, notification := range feedResp.Notifications {
-		log.Debug("notifications", slog.Any("notification", notification))
 		if notification.Type == "follow_created" {
 			foundFollowNotification = true
 			log.Info("Found follow_created notification", "notification_id", notification.ID, "followee_id", followeeID)

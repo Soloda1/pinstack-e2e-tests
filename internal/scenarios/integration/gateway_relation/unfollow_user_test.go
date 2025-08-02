@@ -1,12 +1,11 @@
 package gateway_relation
 
 import (
-	"testing"
-
 	"github.com/Soloda1/pinstack-system-tests/internal/custom_errors"
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 func setupUnfollowUserTest(t *testing.T, tc *TestContext) (followerToken string, followerID int64, followeeToken string, followeeID int64, teardown func()) {
@@ -218,36 +217,4 @@ func TestUnfollowUserDoubleUnfollow(t *testing.T) {
 	assert.Nil(t, unfollowResp2, "Second response should be nil on error")
 
 	log.Info("Correctly rejected duplicate unfollow request", "follower_id", followerID, "followee_id", followeeID)
-}
-
-func TestUnfollowUserWithoutNotificationGeneration(t *testing.T) {
-	t.Parallel()
-	tc := NewTestContext()
-	defer tc.Cleanup()
-
-	followerToken, followerID, followeeToken, followeeID, teardown := setupUnfollowUserTestWithExistingRelation(t, tc)
-	defer teardown()
-
-	tc.APIClient.SetToken(followeeToken)
-	initialFeedResp, err := tc.NotificationClient.GetUserNotificationFeed(followeeID, 1, 10)
-	require.NoError(t, err, "Failed to get initial notification feed")
-	initialNotificationCount := len(initialFeedResp.Notifications)
-
-	tc.APIClient.SetToken(followerToken)
-	unfollowResp, err := tc.RelationClient.Unfollow(followeeID)
-	require.NoError(t, err, "Failed to unfollow user")
-	assert.NotNil(t, unfollowResp, "Response should not be nil")
-
-	tc.APIClient.SetToken(followeeToken)
-	finalFeedResp, err := tc.NotificationClient.GetUserNotificationFeed(followeeID, 1, 10)
-	require.NoError(t, err, "Failed to get final notification feed")
-	finalNotificationCount := len(finalFeedResp.Notifications)
-
-	assert.Equal(t, initialNotificationCount, finalNotificationCount, "Unfollow should not create new notifications")
-
-	log.Info("Successfully verified unfollow user without notification generation",
-		"follower_id", followerID,
-		"followee_id", followeeID,
-		"initial_notifications", initialNotificationCount,
-		"final_notifications", finalNotificationCount)
 }

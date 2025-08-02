@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/Soloda1/pinstack-system-tests/config"
 	"github.com/Soloda1/pinstack-system-tests/internal/client"
@@ -291,11 +292,14 @@ func setupFollowRelationUsers(t *testing.T, tc *TestContext) (followerToken stri
 	}
 }
 
+var outboxTickInterval time.Duration
+
 func TestMain(m *testing.M) {
 	flag.Parse()
 
 	cfg = config.MustLoad("../../../../config")
 	log = logger.New(cfg.Env)
+	outboxTickInterval = cfg.Outbox.TickInterval()
 	log.Info("Starting relation gateway tests", "env", cfg.Env)
 
 	code := m.Run()

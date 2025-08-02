@@ -8,11 +8,22 @@ import (
 )
 
 type Config struct {
-	Env      string   `mapstructure:"env"`
-	API      API      `mapstructure:"api"`
-	Test     Test     `mapstructure:"test"`
-	Services Services `mapstructure:"services"`
-	JWT      JWT      `mapstructure:"jwt"`
+	Env      string       `mapstructure:"env"`
+	API      API          `mapstructure:"api"`
+	Test     Test         `mapstructure:"test"`
+	Services Services     `mapstructure:"services"`
+	JWT      JWT          `mapstructure:"jwt"`
+	Outbox   OutboxConfig `mapstructure:"outbox"`
+}
+
+type OutboxConfig struct {
+	Concurrency    int
+	TickIntervalMs int
+	BatchSize      int
+}
+
+func (o OutboxConfig) TickInterval() time.Duration {
+	return time.Duration(o.TickIntervalMs) * time.Millisecond
 }
 
 type API struct {
@@ -53,6 +64,10 @@ func MustLoad(configPath string) *Config {
 	viper.SetConfigName("test-config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(configPath)
+
+	viper.SetDefault("outbox.concurrency", 10)
+	viper.SetDefault("outbox.tick_interval_ms", 2000)
+	viper.SetDefault("outbox.batch_size", 100)
 
 	viper.SetDefault("env", "test")
 
@@ -147,6 +162,11 @@ func MustLoad(configPath string) *Config {
 				Address: viper.GetString("services.notification_service.address"),
 				Port:    viper.GetInt("services.notification_service.port"),
 			},
+		},
+		Outbox: OutboxConfig{
+			Concurrency:    viper.GetInt("outbox.concurrency"),
+			TickIntervalMs: viper.GetInt("outbox.tick_interval_ms"),
+			BatchSize:      viper.GetInt("outbox.batch_size"),
 		},
 		JWT: JWT{
 			Secret:           viper.GetString("jwt.secret"),
