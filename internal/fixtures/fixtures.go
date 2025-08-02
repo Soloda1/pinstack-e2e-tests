@@ -331,6 +331,44 @@ func GenerateUnfollowRequest(followeeId int64) *UnfollowRequest {
 	}
 }
 
+func GenerateGetFollowersResponse(userID int64, page, limit int) *GetFollowersResponse {
+	followers := GenerateTestUsers(safeRandIntn(limit) + 1)
+	total := len(followers) + safeRandIntn(50)
+	totalPages := (total + limit - 1) / limit
+
+	var followersUsers []User
+	for _, user := range followers {
+		followersUsers = append(followersUsers, *user)
+	}
+
+	return &GetFollowersResponse{
+		Followers:  followersUsers,
+		Page:       page,
+		Limit:      limit,
+		Total:      total,
+		TotalPages: totalPages,
+	}
+}
+
+func GenerateGetFolloweesResponse(userID int64, page, limit int) *GetFolloweesResponse {
+	followees := GenerateTestUsers(safeRandIntn(limit) + 1)
+	total := len(followees) + safeRandIntn(50)
+	totalPages := (total + limit - 1) / limit
+
+	var followeesUsers []User
+	for _, user := range followees {
+		followeesUsers = append(followeesUsers, *user)
+	}
+
+	return &GetFolloweesResponse{
+		Followees:  followeesUsers,
+		Page:       page,
+		Limit:      limit,
+		Total:      total,
+		TotalPages: totalPages,
+	}
+}
+
 // ========= Notification Data Generators =========
 
 const (
