@@ -42,13 +42,12 @@ services:
   user-migrator-test:
     container_name: pinstack-user-migrator-test
     build:
-      context: ../pinstack-user-service
+      context: https://github.com/Soloda1/pinstack-user-service.git
       dockerfile: Dockerfile.migrator
     depends_on:
       user-db-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-user-service/migrations:/app/migrations:ro
       - ./config/user-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
@@ -56,28 +55,10 @@ services:
       - pinstack-test
     command: ./migrator -command up
 
-  pgadmin-test:
-    image: dpage/pgadmin4:latest
-    container_name: pinstack-user-pgadmin-test
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_LISTEN_PORT: 5050
-      # Минимальные настройки для экономии памяти
-      PGADMIN_CONFIG_SESSION_EXPIRATION_TIME: 1
-      PGADMIN_CONFIG_CHECK_SESSION_FILES_INTERVAL: 30
-    ports:
-      - "42050:5050"
-    depends_on:
-      user-db-test:
-        condition: service_healthy
-    networks:
-      - pinstack-test
-
   user-service-test:
     container_name: pinstack-user-service-test
     build:
-      context: ../pinstack-user-service
+      context: https://github.com/Soloda1/pinstack-user-service.git
       dockerfile: Dockerfile
     depends_on:
       user-migrator-test:
@@ -144,13 +125,12 @@ services:
   auth-migrator-test:
     container_name: pinstack-auth-migrator-test
     build:
-      context: ../pinstack-auth-service
+      context: https://github.com/Soloda1/pinstack-auth-service.git
       dockerfile: Dockerfile.migrator
     depends_on:
       auth-db-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-auth-service/migrations:/app/migrations:ro
       - ./config/auth-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
@@ -161,7 +141,7 @@ services:
   auth-service-test:
     container_name: pinstack-auth-service-test
     build:
-      context: ../pinstack-auth-service
+      context: https://github.com/Soloda1/pinstack-auth-service.git
       dockerfile: Dockerfile
     depends_on:
       auth-migrator-test:
@@ -228,13 +208,12 @@ services:
   post-migrator-test:
     container_name: pinstack-post-migrator-test
     build:
-      context: ../pinstack-post-service
+      context: https://github.com/Soloda1/pinstack-post-service.git
       dockerfile: Dockerfile.migrator
     depends_on:
       post-db-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-post-service/migrations:/app/migrations:ro
       - ./config/post-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
@@ -245,7 +224,7 @@ services:
   post-service-test:
     container_name: pinstack-post-service-test
     build:
-      context: ../pinstack-post-service
+      context: https://github.com/Soloda1/pinstack-post-service.git
       dockerfile: Dockerfile
     depends_on:
       post-migrator-test:
@@ -312,13 +291,12 @@ services:
   relation-migrator-test:
     container_name: pinstack-relation-migrator-test
     build:
-      context: ../pinstack-relation-service
+      context: https://github.com/Soloda1/pinstack-relation-service.git
       dockerfile: Dockerfile.migrator
     depends_on:
       relation-db-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-relation-service/migrations:/app/migrations:ro
       - ./config/relation-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
@@ -329,7 +307,7 @@ services:
   relation-service-test:
     container_name: pinstack-relation-service-test
     build:
-      context: ../pinstack-relation-service
+      context: https://github.com/Soloda1/pinstack-relation-service.git
       dockerfile: Dockerfile
     depends_on:
       relation-migrator-test:
@@ -366,7 +344,7 @@ services:
   api-gateway-test:
     container_name: pinstack-api-gateway-test
     build:
-      context: ../pinstack-api-gateway
+      context: https://github.com/Soloda1/pinstack-api-gateway.git
       dockerfile: Dockerfile
     depends_on:
       - user-service-test
@@ -516,13 +494,12 @@ services:
   notification-migrator-test:
     container_name: pinstack-notification-migrator-test
     build:
-      context: ../pinstack-notification-service
+      context: https://github.com/Soloda1/pinstack-notification-service.git
       dockerfile: Dockerfile.migrator
     depends_on:
       notification-db-test:
         condition: service_healthy
     volumes:
-      - ../pinstack-notification-service/migrations:/app/migrations:ro
       - ./config/notification-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
@@ -533,7 +510,7 @@ services:
   notification-service-test:
     container_name: pinstack-notification-service-test
     build:
-      context: ../pinstack-notification-service
+      context: https://github.com/Soloda1/pinstack-notification-service.git
       dockerfile: Dockerfile
     depends_on:
       notification-migrator-test:
