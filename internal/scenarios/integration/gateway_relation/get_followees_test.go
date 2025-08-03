@@ -76,14 +76,15 @@ func TestGetFolloweesSuccess(t *testing.T) {
 	require.NoError(t, err, "Failed to get followees")
 	require.NotNil(t, followeesResp, "Response should not be nil")
 
-	assert.Equal(t, 1, followeesResp.Page, "Page should be 1")
-	assert.Equal(t, 10, followeesResp.Limit, "Limit should be 10")
-	assert.Equal(t, len(followeeIDs), followeesResp.Total, "Total should match number of followees")
+	assert.Equal(t, int32(1), followeesResp.Page, "Page should be 1")
+	assert.Equal(t, int32(10), followeesResp.Limit, "Limit should be 10")
+	assert.Equal(t, int64(len(followeeIDs)), followeesResp.Total, "Total should match number of followees")
 	assert.Len(t, followeesResp.Followees, len(followeeIDs), "Should return all followees")
 
+	// Verify all expected followees are in the response
 	returnedFolloweeIDs := make(map[int64]bool)
-	for _, followeeID := range followeesResp.Followees {
-		returnedFolloweeIDs[followeeID] = true
+	for _, followee := range followeesResp.Followees {
+		returnedFolloweeIDs[followee.ID] = true
 	}
 
 	for _, expectedFolloweeID := range followeeIDs {
@@ -108,9 +109,9 @@ func TestGetFolloweesEmptyList(t *testing.T) {
 	require.NoError(t, err, "Should succeed even with no followees")
 	require.NotNil(t, followeesResp, "Response should not be nil")
 
-	assert.Equal(t, 1, followeesResp.Page, "Page should be 1")
-	assert.Equal(t, 10, followeesResp.Limit, "Limit should be 10")
-	assert.Equal(t, 0, followeesResp.Total, "Total should be 0")
+	assert.Equal(t, int32(1), followeesResp.Page, "Page should be 1")
+	assert.Equal(t, int32(10), followeesResp.Limit, "Limit should be 10")
+	assert.Equal(t, int64(0), followeesResp.Total, "Total should be 0")
 	assert.Empty(t, followeesResp.Followees, "Followees list should be empty")
 
 	log.Info("Successfully handled empty followees list", "follower_user_id", followerUserID)
@@ -163,8 +164,8 @@ func TestGetFolloweesPagination(t *testing.T) {
 	require.NoError(t, err, "Failed to get followees with pagination")
 	require.NotNil(t, followeesResp, "Response should not be nil")
 
-	assert.Equal(t, 1, followeesResp.Page, "Page should be 1")
-	assert.Equal(t, 2, followeesResp.Limit, "Limit should be 2")
+	assert.Equal(t, int32(1), followeesResp.Page, "Page should be 1")
+	assert.Equal(t, int32(2), followeesResp.Limit, "Limit should be 2")
 	assert.LessOrEqual(t, len(followeesResp.Followees), 2, "Should return at most 2 followees")
 
 	log.Info("Successfully tested followees pagination",

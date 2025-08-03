@@ -184,18 +184,25 @@ type UnfollowResponse struct {
 	Message string `json:"message"`
 }
 
+// RelationUser represents a user in relation context
+type RelationUser struct {
+	ID        int64   `json:"id"`
+	Username  string  `json:"username"`
+	AvatarURL *string `json:"avatar_url,omitempty"`
+}
+
 type GetFollowersResponse struct {
-	Followers []int64 `json:"follower_ids"`
-	Page      int     `json:"page"`
-	Limit     int     `json:"limit"`
-	Total     int     `json:"total"`
+	Followers []*RelationUser `json:"followers"`
+	Total     int64           `json:"total"`
+	Page      int32           `json:"page"`
+	Limit     int32           `json:"limit"`
 }
 
 type GetFolloweesResponse struct {
-	Followees []int64 `json:"followee_ids"`
-	Page      int     `json:"page"`
-	Limit     int     `json:"limit"`
-	Total     int     `json:"total"`
+	Followees []*RelationUser `json:"followees"`
+	Total     int64           `json:"total"`
+	Page      int32           `json:"page"`
+	Limit     int32           `json:"limit"`
 }
 
 // ========= Notification Types =========

@@ -93,8 +93,8 @@ func (rc *RelationClient) GetFollowers(userID int64, page, limit int) (*fixtures
 	rc.client.log.Info("User followers retrieved successfully",
 		slog.Int64("user_id", userID),
 		slog.Int("followers_count", len(response.Followers)),
-		slog.Int("total", response.Total),
-		slog.Int("page", response.Page),
+		slog.Int64("total", response.Total),
+		slog.Int("page", int(response.Page)),
 	)
 	return &response, nil
 }
@@ -125,8 +125,8 @@ func (rc *RelationClient) GetFollowees(userID int64, page, limit int) (*fixtures
 	rc.client.log.Info("User followees retrieved successfully",
 		slog.Int64("user_id", userID),
 		slog.Int("followees_count", len(response.Followees)),
-		slog.Int("total", response.Total),
-		slog.Int("page", response.Page),
+		slog.Int64("total", response.Total),
+		slog.Int("page", int(response.Page)),
 	)
 	return &response, nil
 }

@@ -340,32 +340,50 @@ func GenerateUnfollowRequest(followeeId int64) *UnfollowRequest {
 
 func GenerateGetFollowersResponse(page, limit int) *GetFollowersResponse {
 	count := safeRandIntn(limit) + 1
-	var followers []int64
+	var followers []*RelationUser
 	for i := 0; i < count; i++ {
-		followers = append(followers, safeRandInt64())
+		user := GenerateRelationUser()
+		followers = append(followers, user)
 	}
 
 	return &GetFollowersResponse{
 		Followers: followers,
-		Page:      page,
-		Limit:     limit,
-		Total:     count,
+		Page:      int32(page),
+		Limit:     int32(limit),
+		Total:     int64(count),
 	}
 }
 
 func GenerateGetFolloweesResponse(page, limit int) *GetFolloweesResponse {
 	count := safeRandIntn(limit) + 1
-	var followees []int64
+	var followees []*RelationUser
 	for i := 0; i < count; i++ {
-		followees = append(followees, safeRandInt64())
+		user := GenerateRelationUser()
+		followees = append(followees, user)
 	}
 
 	return &GetFolloweesResponse{
 		Followees: followees,
-		Page:      page,
-		Limit:     limit,
-		Total:     count,
+		Page:      int32(page),
+		Limit:     int32(limit),
+		Total:     int64(count),
 	}
+}
+
+// GenerateRelationUser creates a test RelationUser
+func GenerateRelationUser() *RelationUser {
+	user := &RelationUser{
+		ID:       safeRandInt64(),
+		Username: gofakeit.Username(),
+	}
+
+	// 50% chance to have avatar URL
+	if safeRandIntn(2) == 1 {
+		avatarURL := gofakeit.ImageURL(100, 100)
+		user.AvatarURL = &avatarURL
+	}
+
+	return user
 }
 
 // ========= Notification Data Generators =========
