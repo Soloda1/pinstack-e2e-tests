@@ -9,7 +9,6 @@ import (
 
 	"github.com/Soloda1/pinstack-system-tests/config"
 	"github.com/Soloda1/pinstack-system-tests/internal/client"
-	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
 	"github.com/Soloda1/pinstack-system-tests/internal/logger"
 )
 
@@ -227,69 +226,6 @@ func (tc *TestContext) Cleanup() {
 	tc.CreatedRelations = []RelationCleanupInfo{}
 	tc.CreatedNotifications = []NotificationCleanupInfo{}
 	tc.CreatedUsers = []UserCleanupInfo{}
-}
-
-func setupTestUser(t *testing.T, tc *TestContext) (string, int64, func()) {
-	t.Helper()
-
-	registerReq := fixtures.GenerateRegisterRequest()
-	log.Info("Setting up test user", "test", t.Name(), "username", registerReq.Username)
-
-	tokens, err := tc.AuthClient.Register(*registerReq)
-	if err != nil {
-		t.Fatalf("Failed to register test user: %v", err)
-	}
-
-	userByUsername, err := tc.UserClient.GetUserByUsername(registerReq.Username)
-	if err != nil {
-		t.Fatalf("Failed to get user info for test: %v", err)
-	}
-
-	tc.TrackUserForCleanup(userByUsername.ID, userByUsername.Username, tokens.AccessToken)
-
-	return tokens.AccessToken, userByUsername.ID, func() {
-		log.Info("Test complete, local cleanup", "test", t.Name())
-		tc.APIClient.SetToken("")
-	}
-}
-
-func setupFollowRelationUsers(t *testing.T, tc *TestContext) (followerToken string, followerID int64, followeeToken string, followeeID int64, teardown func()) {
-	t.Helper()
-
-	followerRegisterReq := fixtures.GenerateRegisterRequest()
-	log.Info("Setting up follow relation test - registering follower", "test", t.Name(), "username", followerRegisterReq.Username)
-
-	followerTokens, err := tc.AuthClient.Register(*followerRegisterReq)
-	if err != nil {
-		t.Fatalf("Failed to register follower user: %v", err)
-	}
-
-	followerUser, err := tc.UserClient.GetUserByUsername(followerRegisterReq.Username)
-	if err != nil {
-		t.Fatalf("Failed to get follower user info: %v", err)
-	}
-
-	tc.TrackUserForCleanup(followerUser.ID, followerUser.Username, followerTokens.AccessToken)
-
-	followeeRegisterReq := fixtures.GenerateRegisterRequest()
-	log.Info("Setting up follow relation test - registering followee", "test", t.Name(), "username", followeeRegisterReq.Username)
-
-	followeeTokens, err := tc.AuthClient.Register(*followeeRegisterReq)
-	if err != nil {
-		t.Fatalf("Failed to register followee user: %v", err)
-	}
-
-	followeeUser, err := tc.UserClient.GetUserByUsername(followeeRegisterReq.Username)
-	if err != nil {
-		t.Fatalf("Failed to get followee user info: %v", err)
-	}
-
-	tc.TrackUserForCleanup(followeeUser.ID, followeeUser.Username, followeeTokens.AccessToken)
-
-	return followerTokens.AccessToken, followerUser.ID, followeeTokens.AccessToken, followeeUser.ID, func() {
-		log.Info("Follow relation test complete, local cleanup", "test", t.Name())
-		tc.APIClient.SetToken("")
-	}
 }
 
 var outboxTickInterval time.Duration

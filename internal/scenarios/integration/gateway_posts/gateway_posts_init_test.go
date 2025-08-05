@@ -8,7 +8,6 @@ import (
 
 	"github.com/Soloda1/pinstack-system-tests/config"
 	"github.com/Soloda1/pinstack-system-tests/internal/client"
-	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
 	"github.com/Soloda1/pinstack-system-tests/internal/logger"
 )
 
@@ -141,31 +140,6 @@ func (tc *TestContext) Cleanup() {
 	tc.APIClient.SetToken("")
 	tc.CreatedPosts = []PostCleanupInfo{}
 	tc.CreatedUsers = []UserCleanupInfo{}
-}
-
-// Helper function for setting up test users
-func setupTestUser(t *testing.T, tc *TestContext) (string, int64, func()) {
-	t.Helper()
-
-	registerReq := fixtures.GenerateRegisterRequest()
-	log.Info("Setting up test user", "test", t.Name(), "username", registerReq.Username)
-
-	tokens, err := tc.AuthClient.Register(*registerReq)
-	if err != nil {
-		t.Fatalf("Failed to register test user: %v", err)
-	}
-
-	userByUsername, err := tc.UserClient.GetUserByUsername(registerReq.Username)
-	if err != nil {
-		t.Fatalf("Failed to get user info for test: %v", err)
-	}
-
-	tc.TrackUserForCleanup(userByUsername.ID, userByUsername.Username, tokens.AccessToken)
-
-	return tokens.AccessToken, userByUsername.ID, func() {
-		log.Info("Test complete, local cleanup", "test", t.Name())
-		tc.APIClient.SetToken("")
-	}
 }
 
 func TestMain(m *testing.M) {
