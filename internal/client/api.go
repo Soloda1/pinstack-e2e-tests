@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 
 	"github.com/Soloda1/pinstack-system-tests/config"
-	"github.com/Soloda1/pinstack-system-tests/internal/custom_errors"
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
 	"github.com/Soloda1/pinstack-system-tests/internal/logger"
 )
