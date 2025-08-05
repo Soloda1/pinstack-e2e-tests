@@ -1,6 +1,7 @@
 package gateway_user
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -38,12 +39,10 @@ func TestGetUserByIDSuccess(t *testing.T) {
 
 	tc.APIClient.SetToken(accessToken)
 
-	// Get user by ID
 	user, err := tc.UserClient.GetUserByID(userID)
 	require.NoError(t, err)
 	require.NotNil(t, user)
 
-	// Verify the response contains correct user data
 	assert.Equal(t, userID, user.ID)
 	assert.NotEmpty(t, user.Username)
 	assert.NotEmpty(t, user.Email)
@@ -59,11 +58,10 @@ func TestGetUserByIDNotFound(t *testing.T) {
 
 	tc.APIClient.SetToken(accessToken)
 
-	// Try to get a non-existent user
 	nonExistentUserID := int64(999999)
 	_, err := tc.UserClient.GetUserByID(nonExistentUserID)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "not found")
+	assert.Contains(t, err.Error(), custom_errors.ErrUserNotFound.Error())
 }
 
 func TestGetUserByIDValidationErrors(t *testing.T) {
@@ -84,12 +82,12 @@ func TestGetUserByIDValidationErrors(t *testing.T) {
 		{
 			name:        "InvalidUserID",
 			id:          -1,
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name:        "ZeroUserID",
 			id:          0,
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 	}
 

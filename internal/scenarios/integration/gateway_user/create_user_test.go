@@ -1,6 +1,7 @@
 package gateway_user
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -67,7 +68,7 @@ func TestCreateUserUnauthorized(t *testing.T) {
 
 		_, err := tc.UserClient.CreateUser(*createReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "unauthenticated")
+		assert.Contains(t, err.Error(), custom_errors.ErrUnauthenticated.Error())
 	})
 
 	t.Run("InvalidToken", func(t *testing.T) {
@@ -77,7 +78,7 @@ func TestCreateUserUnauthorized(t *testing.T) {
 
 		_, err := tc.UserClient.CreateUser(*createReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "invalid token")
+		assert.Contains(t, err.Error(), custom_errors.ErrInvalidToken.Error())
 	})
 }
 
@@ -101,49 +102,49 @@ func TestCreateUserValidationErrors(t *testing.T) {
 			modifyReq: func(req *fixtures.CreateUserRequest) {
 				req.Username = ""
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name: "ShortUsername",
 			modifyReq: func(req *fixtures.CreateUserRequest) {
 				req.Username = "ab"
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name: "LongUsername",
 			modifyReq: func(req *fixtures.CreateUserRequest) {
 				req.Username = "abcdefghijklmnopqrstuvwxyz1234567890"
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name: "EmptyEmail",
 			modifyReq: func(req *fixtures.CreateUserRequest) {
 				req.Email = ""
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name: "InvalidEmail",
 			modifyReq: func(req *fixtures.CreateUserRequest) {
 				req.Email = "invalid_email"
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name: "EmptyPassword",
 			modifyReq: func(req *fixtures.CreateUserRequest) {
 				req.Password = ""
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name: "ShortPassword",
 			modifyReq: func(req *fixtures.CreateUserRequest) {
 				req.Password = "123"
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 	}
 
@@ -192,7 +193,7 @@ func TestCreateUserConflictErrors(t *testing.T) {
 
 		_, err := tc.UserClient.CreateUser(*duplicateReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "already exists")
+		assert.Contains(t, err.Error(), custom_errors.ErrUsernameExists.Error())
 	})
 
 	t.Run("DuplicateEmail", func(t *testing.T) {
@@ -201,6 +202,6 @@ func TestCreateUserConflictErrors(t *testing.T) {
 
 		_, err := tc.UserClient.CreateUser(*duplicateReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "already exists")
+		assert.Contains(t, err.Error(), custom_errors.ErrEmailExists.Error())
 	})
 }

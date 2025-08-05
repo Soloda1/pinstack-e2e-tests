@@ -1,6 +1,7 @@
 package gateway_user
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -63,7 +64,7 @@ func TestUpdateAvatarUnauthorized(t *testing.T) {
 
 		err := tc.UserClient.UpdateAvatar(*avatarReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "unauthenticated")
+		assert.Contains(t, err.Error(), custom_errors.ErrUnauthenticated.Error())
 	})
 
 	t.Run("InvalidToken", func(t *testing.T) {
@@ -71,7 +72,7 @@ func TestUpdateAvatarUnauthorized(t *testing.T) {
 
 		err := tc.UserClient.UpdateAvatar(*avatarReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "invalid token")
+		assert.Contains(t, err.Error(), custom_errors.ErrInvalidToken.Error())
 	})
 }
 
@@ -93,12 +94,12 @@ func TestUpdateAvatarValidationErrors(t *testing.T) {
 		{
 			name:        "EmptyAvatarURL",
 			avatarURL:   "",
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name:        "InvalidAvatarURL",
 			avatarURL:   "not-a-url",
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 	}
 
@@ -126,28 +127,24 @@ func TestUpdateAvatarValidationErrors(t *testing.T) {
 	}
 }
 
-func TestUpdateAvatarPermissionErrors(t *testing.T) {
+func TestUpdateSelfUserAvatar(t *testing.T) {
 	t.Parallel()
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Create first user
 	accessToken1, userID1, teardown1 := setupUpdateAvatarTest(t, tc)
 	defer teardown1()
 
-	// Create second user
 	_, _, teardown2 := setupUpdateAvatarTest(t, tc)
 	defer teardown2()
 
 	t.Run("UpdateSelfUserAvatar", func(t *testing.T) {
-		// User should be able to update their own avatar
 		tc.APIClient.SetToken(accessToken1)
 
 		avatarReq := fixtures.GenerateUpdateAvatarRequest()
 		err := tc.UserClient.UpdateAvatar(*avatarReq)
 		require.NoError(t, err)
 
-		// Verify the avatar URL is updated
 		updatedUser, err := tc.UserClient.GetUserByID(userID1)
 		require.NoError(t, err)
 		assert.Equal(t, avatarReq.AvatarURL, updatedUser.AvatarURL)
