@@ -3,8 +3,8 @@ package gateway_notification
 import (
 	"testing"
 
-	"github.com/Soloda1/pinstack-system-tests/internal/custom_errors"
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
