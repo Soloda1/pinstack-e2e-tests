@@ -1,10 +1,10 @@
 package gateway_relation
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 	"time"
 
-	"github.com/Soloda1/pinstack-system-tests/internal/custom_errors"
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
