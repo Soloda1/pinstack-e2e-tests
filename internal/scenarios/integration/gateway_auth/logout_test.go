@@ -1,6 +1,7 @@
 package gateway_auth
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -62,7 +63,7 @@ func TestLogoutInvalidToken(t *testing.T) {
 
 		err := tc.AuthClient.Logout(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "invalid")
+		assert.Contains(t, err.Error(), custom_errors.ErrInvalidRefreshToken.Error())
 	})
 
 	t.Run("EmptyRefreshToken", func(t *testing.T) {
@@ -71,7 +72,7 @@ func TestLogoutInvalidToken(t *testing.T) {
 
 		err := tc.AuthClient.Logout(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error())
 	})
 }
 
@@ -88,5 +89,5 @@ func TestLogoutTwice(t *testing.T) {
 
 	err = tc.AuthClient.Logout(*logoutReq)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid")
+	assert.Contains(t, err.Error(), custom_errors.ErrInvalidRefreshToken.Error())
 }

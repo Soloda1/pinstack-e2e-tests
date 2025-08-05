@@ -1,6 +1,7 @@
 package gateway_auth
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -66,7 +67,7 @@ func TestLoginInvalidCredentials(t *testing.T) {
 
 		_, err := tc.AuthClient.Login(invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "invalid")
+		assert.Contains(t, err.Error(), custom_errors.ErrInvalidCredentials.Error())
 	})
 
 	t.Run("NonexistentUser", func(t *testing.T) {
@@ -74,7 +75,7 @@ func TestLoginInvalidCredentials(t *testing.T) {
 
 		_, err := tc.AuthClient.Login(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "not found")
+		assert.Contains(t, err.Error(), custom_errors.ErrUserNotFound.Error())
 	})
 }
 
@@ -92,7 +93,7 @@ func TestLoginValidationErrors(t *testing.T) {
 
 		_, err := tc.AuthClient.Login(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error())
 	})
 
 	t.Run("EmptyPassword", func(t *testing.T) {
@@ -101,7 +102,7 @@ func TestLoginValidationErrors(t *testing.T) {
 
 		_, err := tc.AuthClient.Login(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error())
 	})
 
 	t.Run("ShortPassword", func(t *testing.T) {
@@ -109,6 +110,6 @@ func TestLoginValidationErrors(t *testing.T) {
 
 		_, err := tc.AuthClient.Login(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error())
 	})
 }

@@ -1,6 +1,7 @@
 package gateway_auth
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -76,7 +77,7 @@ func TestUpdatePasswordValidation(t *testing.T) {
 
 		_, err := tc.AuthClient.UpdatePassword(updateReq)
 		assert.Error(t, err, "Should fail with empty old password")
-		assert.Contains(t, err.Error(), "validation", "Expected validation error")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error(), "Expected validation error")
 	})
 
 	t.Run("EmptyNewPassword", func(t *testing.T) {
@@ -87,7 +88,7 @@ func TestUpdatePasswordValidation(t *testing.T) {
 
 		_, err := tc.AuthClient.UpdatePassword(updateReq)
 		assert.Error(t, err, "Should fail with empty new password")
-		assert.Contains(t, err.Error(), "validation", "Expected validation error")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error(), "Expected validation error")
 	})
 
 	t.Run("WeakNewPassword", func(t *testing.T) {
@@ -98,7 +99,7 @@ func TestUpdatePasswordValidation(t *testing.T) {
 
 		_, err := tc.AuthClient.UpdatePassword(updateReq)
 		assert.Error(t, err, "Should fail with weak password")
-		assert.Contains(t, err.Error(), "validation", "Expected validation error")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error(), "Expected validation error")
 	})
 }
 
@@ -119,7 +120,7 @@ func TestUpdatePasswordUnauthorized(t *testing.T) {
 
 	_, err := tc.AuthClient.UpdatePassword(updateReq)
 	assert.Error(t, err, "Should fail without authorization")
-	assert.Contains(t, err.Error(), "unauth", "Expected unauthorized error")
+	assert.Contains(t, err.Error(), custom_errors.ErrUnauthenticated.Error(), "Expected unauthorized error")
 }
 
 func TestUpdatePasswordWrongOldPassword(t *testing.T) {
@@ -137,5 +138,5 @@ func TestUpdatePasswordWrongOldPassword(t *testing.T) {
 
 	_, err := tc.AuthClient.UpdatePassword(updateReq)
 	assert.Error(t, err, "Should fail with wrong old password")
-	assert.Contains(t, err.Error(), "invalid", "Expected invalid old password error")
+	assert.Contains(t, err.Error(), custom_errors.ErrInvalidCredentials.Error(), "Expected invalid old password error")
 }

@@ -1,6 +1,7 @@
 package gateway_auth
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -65,7 +66,7 @@ func TestRefreshTokenInvalidToken(t *testing.T) {
 
 		_, err := tc.AuthClient.RefreshToken(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "invalid")
+		assert.Contains(t, err.Error(), custom_errors.ErrInvalidRefreshToken.Error())
 	})
 
 	t.Run("EmptyRefreshToken", func(t *testing.T) {
@@ -74,7 +75,7 @@ func TestRefreshTokenInvalidToken(t *testing.T) {
 
 		_, err := tc.AuthClient.RefreshToken(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error())
 	})
 }
 
@@ -92,7 +93,7 @@ func TestRefreshTokenAfterLogout(t *testing.T) {
 
 	_, err = tc.AuthClient.RefreshToken(*refreshReq)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid")
+	assert.Contains(t, err.Error(), custom_errors.ErrInvalidRefreshToken.Error())
 }
 
 func TestRefreshTokenReuse(t *testing.T) {
@@ -109,5 +110,5 @@ func TestRefreshTokenReuse(t *testing.T) {
 
 	_, err = tc.AuthClient.RefreshToken(*refreshReq)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid")
+	assert.Contains(t, err.Error(), custom_errors.ErrInvalidRefreshToken.Error())
 }
