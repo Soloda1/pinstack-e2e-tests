@@ -1,6 +1,7 @@
 package gateway_posts
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -11,7 +12,6 @@ import (
 func setupCreatePostTest(t *testing.T, tc *TestContext) (string, int64, func()) {
 	t.Helper()
 
-	// Register a new user for post creation tests
 	registerReq := fixtures.GenerateRegisterRequest()
 	log.Info("Setting up create post test", "test", t.Name(), "username", registerReq.Username)
 
@@ -39,23 +39,18 @@ func TestCreatePostSuccess(t *testing.T) {
 
 	tc.APIClient.SetToken(accessToken)
 
-	// Create a post request with title, content, tags, and media
 	postReq := fixtures.GenerateCreatePostRequest()
 
-	// Send the request
 	createdPost, err := tc.PostClient.CreatePost(*postReq)
 	require.NoError(t, err)
 
-	// Track post for cleanup
 	tc.TrackPostForCleanup(createdPost.ID, userID, accessToken)
 
-	// Validate the response
 	assert.NotEqual(t, 0, createdPost.ID, "Post ID should not be zero")
 	assert.Equal(t, postReq.Title, createdPost.Title, "Post title should match the request")
 	assert.Equal(t, postReq.Content, createdPost.Content, "Post content should match the request")
 	assert.Equal(t, userID, createdPost.AuthorID, "Author ID should match the authenticated user")
 
-	// Validate media items
 	assert.Equal(t, len(postReq.MediaItems), len(createdPost.Media), "Number of media items should match")
 	if len(postReq.MediaItems) > 0 {
 		mediaMap := make(map[string]bool)
@@ -67,7 +62,6 @@ func TestCreatePostSuccess(t *testing.T) {
 		}
 	}
 
-	// Validate tags
 	assert.Equal(t, len(postReq.Tags), len(createdPost.Tags), "Number of tags should match")
 	if len(postReq.Tags) > 0 {
 		tagMap := make(map[string]bool)
@@ -79,7 +73,6 @@ func TestCreatePostSuccess(t *testing.T) {
 		}
 	}
 
-	// Validate that the post can be retrieved via GetPostByID
 	retrievedPost, err := tc.PostClient.GetPostByID(createdPost.ID)
 	require.NoError(t, err)
 
@@ -96,21 +89,18 @@ func TestCreatePostUnauthorized(t *testing.T) {
 	_, _, teardown := setupCreatePostTest(t, tc)
 	defer teardown()
 
-	// Clear the token
 	tc.APIClient.SetToken("")
 
 	postReq := fixtures.GenerateCreatePostRequest()
 
-	// Attempt to create a post without authentication
 	_, err := tc.PostClient.CreatePost(*postReq)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "unauthenticated")
+	assert.Contains(t, err.Error(), custom_errors.ErrUnauthenticated.Error())
 
-	// Try with invalid token
 	tc.APIClient.SetToken("invalid_token")
 	_, err = tc.PostClient.CreatePost(*postReq)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid token")
+	assert.Contains(t, err.Error(), custom_errors.ErrInvalidToken.Error())
 }
 
 func TestCreatePostValidationErrors(t *testing.T) {
@@ -134,7 +124,7 @@ func TestCreatePostValidationErrors(t *testing.T) {
 				Title:   "",
 				Content: "Test content",
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name: "TitleTooLong",
@@ -142,7 +132,7 @@ func TestCreatePostValidationErrors(t *testing.T) {
 				Title:   string(make([]byte, 256)), // Create a very long title
 				Content: "Test content",
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name: "InvalidMediaType",
@@ -156,7 +146,7 @@ func TestCreatePostValidationErrors(t *testing.T) {
 					},
 				},
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name: "InvalidMediaURL",
@@ -170,7 +160,7 @@ func TestCreatePostValidationErrors(t *testing.T) {
 					},
 				},
 			},
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 	}
 

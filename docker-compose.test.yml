@@ -316,6 +316,8 @@ services:
         condition: service_started
       kafka-topics-init-test:
         condition: service_completed_successfully
+      notification-service-test:
+        condition: service_started
     volumes:
       - ./config/relation-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
@@ -516,8 +518,6 @@ services:
       notification-migrator-test:
         condition: service_completed_successfully
       user-service-test:
-        condition: service_started
-      relation-service-test:
         condition: service_started
       kafka-topics-init-test:
         condition: service_completed_successfully

@@ -1,6 +1,7 @@
 package gateway_user
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -35,12 +36,10 @@ func TestGetUserByEmailSuccess(t *testing.T) {
 	_, userEmail, teardown := setupGetUserByEmailTest(t, tc)
 	defer teardown()
 
-	// Get user by email
 	user, err := tc.UserClient.GetUserByEmail(userEmail)
 	require.NoError(t, err)
 	require.NotNil(t, user)
 
-	// Verify the response contains correct user data
 	assert.Equal(t, userEmail, user.Email)
 	assert.NotEmpty(t, user.Username)
 	assert.NotEmpty(t, user.ID)
@@ -54,11 +53,10 @@ func TestGetUserByEmailNotFound(t *testing.T) {
 	_, _, teardown := setupGetUserByEmailTest(t, tc)
 	defer teardown()
 
-	// Try to get a non-existent user
 	nonExistentEmail := "non.existent.user@example.com"
 	_, err := tc.UserClient.GetUserByEmail(nonExistentEmail)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "not found")
+	assert.Contains(t, err.Error(), custom_errors.ErrUserNotFound.Error())
 }
 
 func TestGetUserByEmailValidationErrors(t *testing.T) {
@@ -77,12 +75,12 @@ func TestGetUserByEmailValidationErrors(t *testing.T) {
 		{
 			name:        "EmptyEmail",
 			email:       " ",
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name:        "InvalidEmail",
 			email:       "not-an-email",
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 	}
 

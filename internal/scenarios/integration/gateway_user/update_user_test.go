@@ -1,6 +1,7 @@
 package gateway_user
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -38,21 +39,18 @@ func TestUpdateUserSuccess(t *testing.T) {
 
 	tc.APIClient.SetToken(accessToken)
 
-	// Prepare update request
 	updateReq := fixtures.GenerateUpdateUserRequest(userID, "", "", "", "")
 
 	response, err := tc.UserClient.UpdateUser(*updateReq)
 	require.NoError(t, err)
 	require.NotNil(t, response)
 
-	// Verify the response contains updated data
 	assert.Equal(t, userID, response.ID)
 	assert.Equal(t, updateReq.Username, response.Username)
 	assert.Equal(t, updateReq.Email, response.Email)
 	assert.Equal(t, updateReq.FullName, response.FullName)
 	assert.Equal(t, updateReq.Bio, response.Bio)
 
-	// Verify the user is actually updated by fetching it
 	updatedUser, err := tc.UserClient.GetUserByID(userID)
 	require.NoError(t, err)
 	assert.Equal(t, updateReq.Username, updatedUser.Username)
@@ -76,7 +74,7 @@ func TestUpdateUserUnauthorized(t *testing.T) {
 
 		_, err := tc.UserClient.UpdateUser(*updateReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "unauthenticated")
+		assert.Contains(t, err.Error(), custom_errors.ErrUnauthenticated.Error())
 	})
 
 	t.Run("InvalidToken", func(t *testing.T) {
@@ -84,7 +82,7 @@ func TestUpdateUserUnauthorized(t *testing.T) {
 
 		_, err := tc.UserClient.UpdateUser(*updateReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "invalid token")
+		assert.Contains(t, err.Error(), custom_errors.ErrInvalidToken.Error())
 	})
 }
 
@@ -111,19 +109,19 @@ func TestUpdateUserValidationErrors(t *testing.T) {
 			name:        "InvalidUserID",
 			id:          -1,
 			username:    "valid_username",
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name:        "ZeroUserID",
 			id:          0,
 			username:    "valid_username",
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name:        "InvalidEmail",
 			id:          userID,
 			email:       "invalid-email",
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 	}
 
@@ -153,11 +151,9 @@ func TestUpdateUserConflictErrors(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Create first user
 	accessToken1, userID1, teardown1 := setupUpdateUserTest(t, tc)
 	defer teardown1()
 
-	// Create second user
 	registerReq2 := fixtures.GenerateRegisterRequest()
 	tokens2, err := tc.AuthClient.Register(*registerReq2)
 	require.NoError(t, err, "Failed to register second test user")
@@ -170,23 +166,21 @@ func TestUpdateUserConflictErrors(t *testing.T) {
 	t.Run("UsernameAlreadyExists", func(t *testing.T) {
 		tc.APIClient.SetToken(accessToken1)
 
-		// Try to update user1 with user2's username
 		updateReq := fixtures.GenerateUpdateUserRequest(userID1, registerReq2.Username, "", "", "")
 
 		_, err := tc.UserClient.UpdateUser(*updateReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "already exists")
+		assert.Contains(t, err.Error(), custom_errors.ErrUsernameExists.Error())
 	})
 
 	t.Run("EmailAlreadyExists", func(t *testing.T) {
 		tc.APIClient.SetToken(accessToken1)
 
-		// Try to update user1 with user2's email
 		updateReq := fixtures.GenerateUpdateUserRequest(userID1, "", registerReq2.Email, "", "")
 
 		_, err := tc.UserClient.UpdateUser(*updateReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "already exists")
+		assert.Contains(t, err.Error(), custom_errors.ErrEmailExists.Error())
 	})
 }
 
@@ -195,27 +189,23 @@ func TestUpdateUserPermissionErrors(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Create first user
 	accessToken1, userID1, teardown1 := setupUpdateUserTest(t, tc)
 	defer teardown1()
 
-	// Create second user
 	_, userID2, teardown2 := setupUpdateUserTest(t, tc)
 	defer teardown2()
 
 	t.Run("UpdateOtherUser", func(t *testing.T) {
-		// Try to update user2 with user1's token
 		tc.APIClient.SetToken(accessToken1)
 
 		updateReq := fixtures.GenerateUpdateUserRequest(userID2, "", "", "", "")
 
 		_, err := tc.UserClient.UpdateUser(*updateReq)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "forbidden")
+		assert.Contains(t, err.Error(), custom_errors.ErrForbidden.Error())
 	})
 
 	t.Run("UpdateSelfUser", func(t *testing.T) {
-		// User should be able to update themselves
 		tc.APIClient.SetToken(accessToken1)
 
 		updateReq := fixtures.GenerateUpdateUserRequest(userID1, "", "", "", "")

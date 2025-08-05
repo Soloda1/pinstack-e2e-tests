@@ -1,6 +1,7 @@
 package gateway_posts
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -11,7 +12,6 @@ import (
 func setupGetPostTest(t *testing.T, tc *TestContext) (string, int64, int64, *fixtures.CreatePostRequest, *fixtures.CreatePostResponse, func()) {
 	t.Helper()
 
-	// Register a new user
 	registerReq := fixtures.GenerateRegisterRequest()
 	log.Info("Setting up get post test", "test", t.Name(), "username", registerReq.Username)
 
@@ -24,12 +24,10 @@ func setupGetPostTest(t *testing.T, tc *TestContext) (string, int64, int64, *fix
 	tc.TrackUserForCleanup(userByUsername.ID, userByUsername.Username, tokens.AccessToken)
 	tc.APIClient.SetToken(tokens.AccessToken)
 
-	// Create a post to retrieve
 	postReq := fixtures.GenerateCreatePostRequest()
 	createdPost, err := tc.PostClient.CreatePost(*postReq)
 	require.NoError(t, err, "Failed to create test post")
 
-	// Track post for cleanup
 	tc.TrackPostForCleanup(createdPost.ID, userByUsername.ID, tokens.AccessToken)
 
 	log.Info("Created test post for get test", "post_id", createdPost.ID, "title", createdPost.Title)
@@ -48,18 +46,15 @@ func TestGetPostByIDSuccess(t *testing.T) {
 	_, _, postID, postReq, createdPost, teardown := setupGetPostTest(t, tc)
 	defer teardown()
 
-	// Get the post by ID
 	retrievedPost, err := tc.PostClient.GetPostByID(postID)
 	require.NoError(t, err)
 
-	// Validate retrieved post data
 	assert.Equal(t, postID, retrievedPost.ID, "Retrieved post ID should match")
 	assert.Equal(t, postReq.Title, retrievedPost.Title, "Retrieved post title should match")
 	assert.Equal(t, postReq.Content, retrievedPost.Content, "Retrieved post content should match")
 	assert.Equal(t, createdPost.AuthorID, retrievedPost.Author.ID, "Retrieved post author ID should match")
 	assert.Equal(t, createdPost.AuthorUsername, retrievedPost.Author.Username, "Retrieved post author username should match")
 
-	// Validate media items
 	assert.Equal(t, len(postReq.MediaItems), len(retrievedPost.Media), "Number of media items should match")
 	if len(postReq.MediaItems) > 0 {
 		mediaMap := make(map[string]bool)
@@ -71,7 +66,6 @@ func TestGetPostByIDSuccess(t *testing.T) {
 		}
 	}
 
-	// Validate tags
 	assert.Equal(t, len(postReq.Tags), len(retrievedPost.Tags), "Number of tags should match")
 	if len(postReq.Tags) > 0 {
 		tagMap := make(map[string]bool)
@@ -89,11 +83,10 @@ func TestGetPostByIDNotFound(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Try to get a non-existent post
 	nonExistentPostID := int64(999999)
 	_, err := tc.PostClient.GetPostByID(nonExistentPostID)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "not found")
+	assert.Contains(t, err.Error(), custom_errors.ErrPostNotFound.Error())
 }
 
 func TestGetPostByIDDeletedPost(t *testing.T) {
@@ -106,12 +99,10 @@ func TestGetPostByIDDeletedPost(t *testing.T) {
 
 	tc.APIClient.SetToken(accessToken)
 
-	// Delete the post
 	err := tc.PostClient.DeletePost(postID)
 	require.NoError(t, err, "Failed to delete post for test")
 
-	// Try to get the deleted post
 	_, err = tc.PostClient.GetPostByID(postID)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "not found")
+	assert.Contains(t, err.Error(), custom_errors.ErrPostNotFound.Error())
 }

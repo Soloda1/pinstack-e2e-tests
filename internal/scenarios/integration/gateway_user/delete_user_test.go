@@ -1,6 +1,7 @@
 package gateway_user
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -41,10 +42,9 @@ func TestDeleteUserSuccess(t *testing.T) {
 	err := tc.UserClient.DeleteUser(userID)
 	require.NoError(t, err)
 
-	// Verify user is actually deleted by trying to get it
 	_, err = tc.UserClient.GetUserByID(userID)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "not found")
+	assert.Contains(t, err.Error(), custom_errors.ErrUserNotFound.Error())
 }
 
 func TestDeleteUserUnauthorized(t *testing.T) {
@@ -59,7 +59,7 @@ func TestDeleteUserUnauthorized(t *testing.T) {
 		tc.APIClient.SetToken("")
 		err := tc.UserClient.DeleteUser(userID)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "unauthenticated")
+		assert.Contains(t, err.Error(), custom_errors.ErrUnauthenticated.Error())
 	})
 
 	t.Run("InvalidToken", func(t *testing.T) {
@@ -67,7 +67,7 @@ func TestDeleteUserUnauthorized(t *testing.T) {
 
 		err := tc.UserClient.DeleteUser(userID)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "invalid token")
+		assert.Contains(t, err.Error(), custom_errors.ErrInvalidToken.Error())
 	})
 }
 
@@ -89,12 +89,12 @@ func TestDeleteUserValidationErrors(t *testing.T) {
 		{
 			name:        "InvalidUserID",
 			userID:      -1,
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 		{
 			name:        "ZeroUserID",
 			userID:      0,
-			expectedErr: "validation failed",
+			expectedErr: custom_errors.ErrValidationFailed.Error(),
 		},
 	}
 
@@ -123,33 +123,28 @@ func TestDeleteUserPermissionErrors(t *testing.T) {
 	tc := NewTestContext()
 	defer tc.Cleanup()
 
-	// Create first user
 	accessToken1, userID1, teardown1 := setupDeleteUserTest(t, tc)
 	defer teardown1()
 
-	// Create second user
 	_, userID2, teardown2 := setupDeleteUserTest(t, tc)
 	defer teardown2()
 
 	t.Run("DeleteOtherUser", func(t *testing.T) {
-		// Try to delete user2 with user1's token
 		tc.APIClient.SetToken(accessToken1)
 
 		err := tc.UserClient.DeleteUser(userID2)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "forbidden")
+		assert.Contains(t, err.Error(), custom_errors.ErrForbidden.Error())
 	})
 
 	t.Run("DeleteSelfUser", func(t *testing.T) {
-		// User should be able to delete themselves
 		tc.APIClient.SetToken(accessToken1)
 
 		err := tc.UserClient.DeleteUser(userID1)
 		require.NoError(t, err)
 
-		// Verify user is actually deleted
 		_, err = tc.UserClient.GetUserByID(userID1)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "not found")
+		assert.Contains(t, err.Error(), custom_errors.ErrUserNotFound.Error())
 	})
 }

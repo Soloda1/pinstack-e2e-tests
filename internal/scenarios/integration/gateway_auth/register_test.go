@@ -1,6 +1,7 @@
 package gateway_auth
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -59,7 +60,7 @@ func TestRegisterInvalidInput(t *testing.T) {
 		invalidReq.Username = ""
 		_, err := tc.AuthClient.Register(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error())
 	})
 
 	t.Run("ShortUsername", func(t *testing.T) {
@@ -67,7 +68,7 @@ func TestRegisterInvalidInput(t *testing.T) {
 		invalidReq.Username = "ab"
 		_, err := tc.AuthClient.Register(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error())
 	})
 
 	t.Run("LongUsername", func(t *testing.T) {
@@ -75,7 +76,7 @@ func TestRegisterInvalidInput(t *testing.T) {
 		invalidReq.Username = "abcdefghijklmnopqrstuvwxyz1234567890"
 		_, err := tc.AuthClient.Register(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error())
 	})
 
 	t.Run("InvalidEmail", func(t *testing.T) {
@@ -83,7 +84,7 @@ func TestRegisterInvalidInput(t *testing.T) {
 		invalidReq.Email = "invalid_email"
 		_, err := tc.AuthClient.Register(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error())
 	})
 
 	t.Run("ShortPassword", func(t *testing.T) {
@@ -91,7 +92,7 @@ func TestRegisterInvalidInput(t *testing.T) {
 		invalidReq.Password = "12345"
 		_, err := tc.AuthClient.Register(*invalidReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "validation")
+		assert.Contains(t, err.Error(), custom_errors.ErrValidationFailed.Error())
 	})
 }
 
@@ -124,7 +125,7 @@ func TestRegisterConflict(t *testing.T) {
 		conflictReq.Email = fixtures.GenerateRegisterRequest().Email
 		_, err := tc.AuthClient.Register(*conflictReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "exists")
+		assert.Contains(t, err.Error(), custom_errors.ErrUsernameExists.Error())
 	})
 
 	t.Run("DuplicateEmail", func(t *testing.T) {
@@ -133,6 +134,6 @@ func TestRegisterConflict(t *testing.T) {
 		conflictReq.Username = fixtures.GenerateRegisterRequest().Username
 		_, err := tc.AuthClient.Register(*conflictReq)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "exists")
+		assert.Contains(t, err.Error(), custom_errors.ErrEmailExists.Error())
 	})
 }

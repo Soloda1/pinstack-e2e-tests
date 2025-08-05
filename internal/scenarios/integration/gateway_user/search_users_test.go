@@ -1,6 +1,7 @@
 package gateway_user
 
 import (
+	"github.com/soloda1/pinstack-proto-definitions/custom_errors"
 	"testing"
 
 	"github.com/Soloda1/pinstack-system-tests/internal/fixtures"
@@ -11,18 +12,15 @@ import (
 func setupSearchUsersTest(t *testing.T, tc *TestContext) (string, []fixtures.User, func()) {
 	t.Helper()
 
-	// Create multiple test users with known usernames for search testing
 	var users []fixtures.User
 	userCount := 3
 
 	log.Info("Setting up search users test", "test", t.Name(), "user_count", userCount)
 
-	// Generate a common prefix for test users to make them easier to search
 	searchPrefix := "searchtest"
 
 	for i := 0; i < userCount; i++ {
 		registerReq := fixtures.GenerateRegisterRequest()
-		// Add a prefix to make sure we can search for these specific users
 		registerReq.Username = searchPrefix + registerReq.Username
 
 		tokens, err := tc.AuthClient.Register(*registerReq)
@@ -35,7 +33,6 @@ func setupSearchUsersTest(t *testing.T, tc *TestContext) (string, []fixtures.Use
 		users = append(users, *user)
 	}
 
-	// Register one more user for authentication
 	registerReq := fixtures.GenerateRegisterRequest()
 	tokens, err := tc.AuthClient.Register(*registerReq)
 	require.NoError(t, err, "Failed to register auth user")
@@ -61,16 +58,13 @@ func TestSearchUsersSuccess(t *testing.T) {
 	tc.APIClient.SetToken(accessToken)
 
 	t.Run("SearchByUsername", func(t *testing.T) {
-		// Search by the common prefix we added to test users
 		searchQuery := "searchtest"
 		response, err := tc.UserClient.SearchUsers(searchQuery, 1, 10)
 		require.NoError(t, err)
 		require.NotNil(t, response)
 
-		// We should find at least the number of users we created
 		assert.GreaterOrEqual(t, len(response.Users), len(testUsers))
 
-		// Verify that all our test users are included in the results
 		var foundCount int
 		for _, testUser := range testUsers {
 			for _, resultUser := range response.Users {
@@ -86,19 +80,16 @@ func TestSearchUsersSuccess(t *testing.T) {
 
 	t.Run("SearchWithPagination", func(t *testing.T) {
 		searchQuery := "searchtest"
-		// Get first page with only 1 result per page
 		page1, err := tc.UserClient.SearchUsers(searchQuery, 1, 1)
 		require.NoError(t, err)
 		require.NotNil(t, page1)
 		assert.Len(t, page1.Users, 1, "Should return exactly 1 result on page 1")
 
-		// Get second page
 		page2, err := tc.UserClient.SearchUsers(searchQuery, 2, 1)
 		require.NoError(t, err)
 		require.NotNil(t, page2)
 		assert.Len(t, page2.Users, 1, "Should return exactly 1 result on page 2")
 
-		// Make sure pages contain different users
 		assert.NotEqual(t, page1.Users[0].ID, page2.Users[0].ID, "Pages should contain different users")
 	})
 }
@@ -113,13 +104,11 @@ func TestSearchUsersNoResults(t *testing.T) {
 
 	tc.APIClient.SetToken(accessToken)
 
-	// Search for a very specific username that doesn't exist
 	searchQuery := "thisusershoulddefinitelynotexist12345"
 	response, err := tc.UserClient.SearchUsers(searchQuery, 1, 10)
 	require.NoError(t, err)
 	require.NotNil(t, response)
 
-	// Should return an empty list, not an error
 	assert.Equal(t, 0, len(response.Users))
 	assert.Equal(t, 0, response.Total)
 }
@@ -146,7 +135,7 @@ func TestSearchUsersValidationErrors(t *testing.T) {
 			query:       "",
 			page:        1,
 			limit:       10,
-			expectedErr: "invalid search query",
+			expectedErr: custom_errors.ErrInvalidSearchQuery.Error(),
 		},
 	}
 
