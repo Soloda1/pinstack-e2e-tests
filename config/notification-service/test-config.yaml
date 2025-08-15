@@ -42,3 +42,10 @@ database:
 prometheus:
   address: "0.0.0.0"
   port: 9105
+
+redis:
+  address: "redis"
+  port: 6379
+  password: ""
+  db: 3
+  pool_size: 10

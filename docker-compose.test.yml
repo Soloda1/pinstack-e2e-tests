@@ -543,6 +543,23 @@ services:
         reservations:
           memory: 64M
 
+  redis:
+    image: redis:7-alpine
+    container_name: pinstack-redis
+    ports:
+      - "42379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - pinstack-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
 networks:
   pinstack-test:
     driver: bridge

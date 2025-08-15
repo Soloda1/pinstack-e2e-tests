@@ -31,3 +31,10 @@ jwt:
 prometheus:
   address: "0.0.0.0"
   port: 9106
+
+redis:
+  address: "redis"
+  port: 6379
+  password: ""
+  db: 1
+  pool_size: 10
