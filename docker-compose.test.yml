@@ -35,14 +35,12 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    # Для GitHub Actions - обычные volumes, но без named volumes
-    # При docker compose down -v все удалится
     shm_size: 128mb
 
   user-migrator-test:
     container_name: pinstack-user-migrator-test
     build:
-      context: https://github.com/Soloda1/pinstack-user-service.git
+      context: ${USER_SERVICE_CONTEXT:-https://github.com/Soloda1/pinstack-user-service.git}
       dockerfile: Dockerfile.migrator
     depends_on:
       user-db-test:
@@ -58,7 +56,7 @@ services:
   user-service-test:
     container_name: pinstack-user-service-test
     build:
-      context: https://github.com/Soloda1/pinstack-user-service.git
+      context: ${USER_SERVICE_CONTEXT:-https://github.com/Soloda1/pinstack-user-service.git}
       dockerfile: Dockerfile
     depends_on:
       user-migrator-test:
@@ -67,7 +65,6 @@ services:
       - ./config/user-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
       - ENV=test
-      # Ограничиваем память для Go сервиса
       - GOMEMLIMIT=100MiB
       - GOGC=50
     networks:
@@ -79,7 +76,6 @@ services:
       options:
         max-size: "50m"
         max-file: "2"
-    # Ограничиваем ресурсы
     deploy:
       resources:
         limits:
@@ -125,7 +121,7 @@ services:
   auth-migrator-test:
     container_name: pinstack-auth-migrator-test
     build:
-      context: https://github.com/Soloda1/pinstack-auth-service.git
+      context: ${AUTH_SERVICE_CONTEXT:-https://github.com/Soloda1/pinstack-auth-service.git}
       dockerfile: Dockerfile.migrator
     depends_on:
       auth-db-test:
@@ -141,7 +137,7 @@ services:
   auth-service-test:
     container_name: pinstack-auth-service-test
     build:
-      context: https://github.com/Soloda1/pinstack-auth-service.git
+      context: ${AUTH_SERVICE_CONTEXT:-https://github.com/Soloda1/pinstack-auth-service.git}
       dockerfile: Dockerfile
     depends_on:
       auth-migrator-test:
@@ -208,7 +204,7 @@ services:
   post-migrator-test:
     container_name: pinstack-post-migrator-test
     build:
-      context: https://github.com/Soloda1/pinstack-post-service.git
+      context: ${POST_SERVICE_CONTEXT:-https://github.com/Soloda1/pinstack-post-service.git}
       dockerfile: Dockerfile.migrator
     depends_on:
       post-db-test:
@@ -224,13 +220,15 @@ services:
   post-service-test:
     container_name: pinstack-post-service-test
     build:
-      context: https://github.com/Soloda1/pinstack-post-service.git
+      context: ${POST_SERVICE_CONTEXT:-https://github.com/Soloda1/pinstack-post-service.git}
       dockerfile: Dockerfile
     depends_on:
       post-migrator-test:
         condition: service_completed_successfully
       user-service-test:
         condition: service_started
+      redis:
+        condition: service_healthy
     volumes:
       - ./config/post-service/test-config.yaml:/app/config/config.yaml:ro
     environment:
@@ -291,7 +289,7 @@ services:
   relation-migrator-test:
     container_name: pinstack-relation-migrator-test
     build:
-      context: https://github.com/Soloda1/pinstack-relation-service.git
+      context: ${RELATION_SERVICE_CONTEXT:-https://github.com/Soloda1/pinstack-relation-service.git}
       dockerfile: Dockerfile.migrator
     depends_on:
       relation-db-test:
@@ -307,7 +305,7 @@ services:
   relation-service-test:
     container_name: pinstack-relation-service-test
     build:
-      context: https://github.com/Soloda1/pinstack-relation-service.git
+      context: ${RELATION_SERVICE_CONTEXT:-https://github.com/Soloda1/pinstack-relation-service.git}
       dockerfile: Dockerfile
     depends_on:
       relation-migrator-test:
@@ -346,7 +344,7 @@ services:
   api-gateway-test:
     container_name: pinstack-api-gateway-test
     build:
-      context: https://github.com/Soloda1/pinstack-api-gateway.git
+      context: ${API_GATEWAY_CONTEXT:-https://github.com/Soloda1/pinstack-api-gateway.git}
       dockerfile: Dockerfile
     depends_on:
       - user-service-test
@@ -496,7 +494,7 @@ services:
   notification-migrator-test:
     container_name: pinstack-notification-migrator-test
     build:
-      context: https://github.com/Soloda1/pinstack-notification-service.git
+      context: ${NOTIFICATION_SERVICE_CONTEXT:-https://github.com/Soloda1/pinstack-notification-service.git}
       dockerfile: Dockerfile.migrator
     depends_on:
       notification-db-test:
@@ -512,7 +510,7 @@ services:
   notification-service-test:
     container_name: pinstack-notification-service-test
     build:
-      context: https://github.com/Soloda1/pinstack-notification-service.git
+      context: ${NOTIFICATION_SERVICE_CONTEXT:-https://github.com/Soloda1/pinstack-notification-service.git}
       dockerfile: Dockerfile
     depends_on:
       notification-migrator-test:
@@ -543,9 +541,12 @@ services:
         reservations:
           memory: 64M
 
+  ######################
+  # Redis
+  ######################
   redis:
     image: redis:7-alpine
-    container_name: pinstack-redis
+    container_name: pinstack-redis-test
     ports:
       - "42379:6379"
     volumes:
@@ -555,10 +556,24 @@ services:
     networks:
       - pinstack-test
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
+
+volumes:
+  redis_data:
 
 networks:
   pinstack-test:
