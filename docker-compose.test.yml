@@ -577,4 +577,5 @@ volumes:
 
 networks:
   pinstack-test:
+    external: true
     driver: bridge
